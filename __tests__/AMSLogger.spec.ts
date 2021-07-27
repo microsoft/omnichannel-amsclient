@@ -1,4 +1,4 @@
-import LogLevel from "@microsoft/omnichannel-ic3core/lib/logging/LogLevel";
+import LogLevel from "../src/LogLevel";
 import AMSLogger from "../src/AMSLogger";
 
 describe('AMSLogger', () => {
