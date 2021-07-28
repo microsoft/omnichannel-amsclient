@@ -44,7 +44,7 @@ jobs:
 
       - name: Build CDN & NPM packages
         run: |
-          npm run build:tsc && npx cross-env BASE_URL="${{ env.BASE_URL_DEV }}" SDK_VERSION="${{ steps.read-package-json.outputs.version }}" ./esbuild.config.js
+          npm run build:tsc && npx cross-env BASE_URL="${{ env.BASE_URL_DEV }}" SDK_VERSION="${{ steps.read-package-json.outputs.version }}" node ./esbuild.config.js
 
       - name: Prepare CDN packages
         run: |
