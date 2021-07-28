@@ -1,9 +1,6 @@
 # Node
 node_modules/
 
-# Config
-config.ts
-
 # Build
 dist/
 lib/
