@@ -208,7 +208,7 @@ const getView = async (fileMetadata: FileMetadata, viewLocation: string, chatTok
         headers[HeadersName.AcceptEncoding] = 'gzip, deflate, sdch, br';
     }
 
-    const request: any = {
+    const request: any = {  // eslint-disable-line @typescript-eslint/no-explicit-any
         headers,
         method: 'GET',
     };
