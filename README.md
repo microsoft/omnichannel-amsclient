@@ -4,7 +4,7 @@ AMS client to interact with Microsoft AMS APIs. This is compatible on Web, Node,
 
 ## Table of Contents
 - [Installation](#installation)
-- [Usage](#Usage)
+- [Usage](#usage)
 
 ## Installation
 
@@ -12,7 +12,7 @@ AMS client to interact with Microsoft AMS APIs. This is compatible on Web, Node,
     npm install @microsoft/omnichannel-amsclient --save
 ```
 
-## API Examples
+## Usage
 
 ### Import
 
