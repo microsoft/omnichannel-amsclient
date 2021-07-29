@@ -1,4 +1,6 @@
 # Omnichannel AMSClient
+[![npm version](https://badge.fury.io/js/%40microsoft%2Fomnichannel-amsclient.svg)](https://badge.fury.io/js/%40microsoft%2Fomnichannel-amsclient)
+![Release CI](https://github.com/microsoft/omnichannel-amsclient/workflows/Release%20CI/badge.svg)
 
 AMS client to interact with Microsoft AMS APIs. This is compatible on Web, Node, and Mobile using React Native.
 
