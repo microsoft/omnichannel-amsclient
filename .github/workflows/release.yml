@@ -60,12 +60,12 @@ jobs:
       - name: Publish CDN package to latest blob (dev)
         run: |
           az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGDEV }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
-      # - name: Publish CDN package to versioned blob (prod)
-      #   run: |
-      #     az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGPROD }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/${{ steps.read-package-json.outputs.version }}" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
-      # - name: Publish CDN package to latest blob (prod)
-      #   run: |
-      #     az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGPROD }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
+      - name: Publish CDN package to versioned blob (prod)
+        run: |
+          az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGPROD }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/${{ steps.read-package-json.outputs.version }}" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
+      - name: Publish CDN package to latest blob (prod)
+        run: |
+          az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGPROD }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
       - name: Npm packaging
         run: npm pack
 
