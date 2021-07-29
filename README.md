@@ -7,6 +7,7 @@ AMS client to interact with Microsoft AMS APIs. This is compatible on Web, Node,
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
+- [Development](#development)
 
 ## Installation
 
@@ -105,6 +106,25 @@ fileReader.onloadend = () => {
 const objectUrl = URL.createObjectURL(new File([blob, ], 'fileName', {type: blob.type}));
 console.log(objectUrl);
 ```
+
+## Development
+
+### Build CDN Package
+
+1. Compile .ts files to .js via `npm run build:tsc`
+1. Build package via `BASE_URL=https://[blob] SDK_VERSION=[version] node .\esbuild.config.js`
+    - `[blob]` & `[version]` are required to specify where to fetch the iframe on framed mode.
+1. Upload files from `dist/` to the `whitelisted` blob
+
+### Build NPM Package
+
+1. Compile .ts files to .js via `npm run build:tsc`
+1. Build package via `BASE_URL=https://[blob] SDK_VERSION=[version] node .\esbuild.config.js`
+    - `[blob]` & `[version]` are required to specify where to fetch the iframe on framed mode.
+1. Upload files from `dist/` to the `whitelisted` blob
+1. Build package via `npm pack .`
+1. Copy `.tgz` to the desired location to install the package
+1. Consume it via `npm install [package].tgz`
 
 ## Contributing
 
