@@ -2,6 +2,108 @@
 
 AMS client to interact with Microsoft AMS APIs. This is compatible on Web, Node, and Mobile using React Native.
 
+## Table of Contents
+- [Installation](#installation)
+- [Usage](#Usage)
+
+## Installation
+
+```
+    npm install @microsoft/omnichannel-amsclient --save
+```
+
+## API Examples
+
+### Import
+
+```ts
+
+// NPM Package
+import createAMSClient from '@microsoft/omnichannel-amsclient';
+
+// CDN Package
+const {createAMSClient} = window.Microsoft.CRM.Omnichannel.AMS.SDK;
+
+```
+
+### Initialization
+```ts
+
+// Get chat token
+const chatToken = getChatToken();
+
+const config = {
+    framedMode: true,
+    debug: false, // optional
+    logger: null // optional
+};
+
+const AMSClient = await createAMSClient(config);
+
+await AMSClient.initialize({
+    chatToken
+});
+```
+
+### Upload Attachment
+```ts
+// Initialize AMSClient
+
+...
+
+// Open file dialog
+const fileSelector = document.createElement('input');
+fileSelector.setAttribute('type', 'file');
+fileSelector.click();
+fileSelector.onchange = async (event: any) => {
+    console.log(file); // FileInfo
+
+    try {
+        const objectResponse = await AMSClient.createObject(chatToken?.chatId as string, fileInfo);
+        const fileMetadata = await this.uploadDocument(objectResponse.id, file);
+
+        // Success
+
+        // Read file content as base64 encoded string
+        const fileReader = new FileReader();
+        fileReader.readAsDataURL(file);
+        fileReader.onloadend = () => {
+            console.log(fileReader.result);
+        }
+
+        // Create URL to access file
+        const objectUrl = URL.createObjectURL(file);
+        console.log(objectUrl);
+    } catch {
+        throw new Error('uploadFile');
+    }
+}
+```
+
+### Download Attachment
+```ts
+// Initialize AMSClient
+
+...
+
+const response = await AMSClient.getViewStatus(fileMetadata);
+
+const {view_location} = response;
+const blob = await AMSClient.getView(fileMetadata, view_location);
+console.log(blob);
+
+// Read file content as base64 encoded string
+const fileReader = new FileReader();
+fileReader.readAsDataURL(blob as Blob);
+fileReader.onloadend = () => {
+    console.log(fileReader.result);
+}
+
+// Create URL to access file
+const objectUrl = URL.createObjectURL(new File([blob, ], 'fileName', {type: blob.type}));
+console.log(objectUrl);
+```
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
