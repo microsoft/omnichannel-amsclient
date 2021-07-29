@@ -1,0 +1,12 @@
+# Node
+node_modules/
+
+# Build
+dist/
+lib/
+
+# NPM
+*.tgz
+
+# Testing
+coverage/

@@ -1,0 +1,33 @@
+{
+  "name": "@microsoft/omnichannel-amsclient",
+  "version": "0.1.0-0",
+  "description": "Microsoft Omnichannel AMSClient",
+  "files": [
+    "lib/**/*"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build:tsc": "tsc",
+    "test": "jest",
+    "lint": "eslint src --ext .ts"
+  },
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/omnichannel-amsclient"
+  },
+  "homepage": "https://github.com/microsoft/omnichannel-amsclient#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "@typescript-eslint/eslint-plugin": "^4.28.5",
+    "@typescript-eslint/parser": "^4.28.5",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.12.1",
+    "eslint": "^7.31.0",
+    "jest": "^27.0.6",
+    "ts-jest": "^27.0.4",
+    "typescript": "^4.2.4"
+  }
+}
