@@ -1,8 +1,8 @@
 export default interface FileMetadata {
-    fileSharingProtocolType: number;
+    fileSharingProtocolType?: number;
     id: string;
-    name: string;
-    size: number;
+    name?: string;
+    size?: number;
     type: string;
-    url: string;
+    url?: string;
 }
