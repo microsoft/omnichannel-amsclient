@@ -201,6 +201,13 @@ class FramedClient {
         const iframeId = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
 
         return new Promise ((resolve, reject) => {
+            const iframeElements = Array.from(document.getElementsByTagName('iframe'));
+            const foundIframeElement = iframeElements.filter(iframeElement => iframeElement.id == iframeId);
+
+            if (foundIframeElement.length) {
+              return resolve();
+            }
+
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
             iframeElement.id = iframeId;
             iframeElement.src = `${baseUrl}/${version}/iframe.html?debug=${this.debug}&telemetry=true`;
