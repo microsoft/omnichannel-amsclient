@@ -13,10 +13,10 @@ describe('FramedClient', () => {
         jest.clearAllMocks();
     });
 
-    it('FramedClient.initialize() should call createIframe()', async () => {
+    it('FramedClient.initialize() should call loadIframe()', async () => {
         const client = new FramedClient();
 
-        (client as any).createIframe = jest.fn();
+        (client as any).loadIframe = jest.fn();
 
         const token = {
             chatId: '',
@@ -27,14 +27,14 @@ describe('FramedClient', () => {
 
         await client.initialize({chatToken: token});
 
-        expect((client as any).createIframe).toHaveBeenCalledTimes(1);
+        expect((client as any).loadIframe).toHaveBeenCalledTimes(1);
     });
 
 
     it('FramedClient.initialize() should call skypeTokenAuth()', async () => {
         const client = new FramedClient();
 
-        (client as any).createIframe = jest.fn();
+        (client as any).loadIframe = jest.fn();
         (client as any).iframeLoaded = true;
 
         const token = {
@@ -54,7 +54,7 @@ describe('FramedClient', () => {
 
         const client = new FramedClient();
 
-        (client as any).createIframe = jest.fn();
+        (client as any).loadIframe = jest.fn();
         (client as any).iframeLoaded = true;
 
         const token = {
