@@ -52,7 +52,7 @@ class FramedClient {
             throw new Error('FramedMode was used in non-Web platform');
         }
 
-        await this.createIframe();
+        await this.loadIframe();
 
         if (!this.iframeLoaded) {
             console.error('iframe not loaded');
@@ -70,6 +70,8 @@ class FramedClient {
             chatToken: chatToken || this.chatToken
         };
 
+        await this.loadIframe();
+
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.SkypeTokenAuth, data, resolve, reject);
         })
@@ -83,6 +85,8 @@ class FramedClient {
             file,
             chatToken: chatToken || this.chatToken
         };
+
+        await this.loadIframe();
 
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.CreateObject, data, resolve, reject);
@@ -98,6 +102,8 @@ class FramedClient {
             chatToken: chatToken || this.chatToken
         };
 
+        await this.loadIframe();
+
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.UploadDocument, data, resolve, reject);
         })
@@ -108,6 +114,8 @@ class FramedClient {
             fileMetadata,
             chatToken: chatToken || this.chatToken
         }
+
+        await this.loadIframe();
 
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.GetViewStatus, data, resolve, reject);
@@ -120,6 +128,8 @@ class FramedClient {
             viewLocation,
             chatToken: chatToken || this.chatToken
         }
+
+        await this.loadIframe();
 
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.GetView, data, resolve, reject);
@@ -148,6 +158,11 @@ class FramedClient {
             reject
         }
 
+        if (!this.targetWindow) {
+            console.error('Target window not found!');
+            return;
+        }
+
         this.targetWindow.postMessage({
             requestId,
             eventType,
@@ -164,7 +179,10 @@ class FramedClient {
         /* istanbul ignore next */
         this.debug && console.log(event);
 
-        this.targetWindow = event.source as Window; // Finds target window to post message back
+        // Finds target window to post message back
+        if (event.source) {
+            this.targetWindow = event.source as Window;
+        }
 
         if (event.data.eventType === PostMessageEventType.Response) {
             /* istanbul ignore next */
@@ -197,15 +215,16 @@ class FramedClient {
         }
     }
 
-    private async createIframe(): Promise<void> {
+    private async loadIframe(): Promise<void> {
         const iframeId = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
 
         return new Promise ((resolve, reject) => {
             const iframeElements = Array.from(document.getElementsByTagName('iframe'));
             const foundIframeElement = iframeElements.filter(iframeElement => iframeElement.id == iframeId);
 
+            // Avoid duplicate load
             if (foundIframeElement.length) {
-              return resolve();
+                return resolve();
             }
 
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
