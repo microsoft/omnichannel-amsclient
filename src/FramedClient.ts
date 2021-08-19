@@ -36,7 +36,7 @@ class FramedClient {
         this.iframeLoaded = false;
         this.logger = logger;
 
-        this.onMessageEvent((event: MessageEvent<any>) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
+        this.onMessageEvent((event: MessageEvent) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
     /* istanbul ignore next */
@@ -171,7 +171,7 @@ class FramedClient {
         }, '*');
     }
 
-    public async handleEvent(event: MessageEvent<any>): Promise<void> {  // eslint-disable-line @typescript-eslint/no-explicit-any
+    public async handleEvent(event: MessageEvent): Promise<void> {  // eslint-disable-line @typescript-eslint/no-explicit-any
         if (event.origin !== this.origin && !baseUrl.includes(event.origin)) {
             return;
         }
