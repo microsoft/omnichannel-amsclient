@@ -1,11 +1,11 @@
 enum PostMessageEventName {
-    IframeLoaded = 'IframeLoaded',
-    SkypeTokenAuth = 'SkypeTokenAuth',
-    CreateObject = 'CreateObject',
-    UploadDocument = 'UploadDocument',
-    GetViewStatus = 'GetViewStatus',
-    GetView = 'GetView',
-    SendTelemetry = 'SendTelemetry'
+    IframeLoaded = 'AMSIframeLoaded',
+    SkypeTokenAuth = 'AMSSkypeTokenAuth',
+    CreateObject = 'AMSCreateObject',
+    UploadDocument = 'AMSUploadDocument',
+    GetViewStatus = 'AMSGetViewStatus',
+    GetView = 'AMSGetView',
+    SendTelemetry = 'AMSSendTelemetry'
 }
 
 export default PostMessageEventName;
