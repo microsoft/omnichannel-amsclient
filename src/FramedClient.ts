@@ -215,9 +215,7 @@ class FramedClient {
                     delete this.requestCallbacks[data.requestId];
                 }
             } else if (event.data.eventName === PostMessageEventName.SendTelemetry) {
-                if (data.requestId in this.requestCallbacks) {
-                    this.logger?.log(data.logLevel, data.logData.Event, data.logData);
-                }
+                this.logger?.log(data.logLevel, data.logData.Event, data.logData);
             }
         }
     }
