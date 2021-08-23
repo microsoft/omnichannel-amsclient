@@ -190,27 +190,34 @@ class FramedClient {
             const {data} = event;
 
             if (event.data.eventName === PostMessageEventName.SkypeTokenAuth) {
-                this.requestCallbacks[data.requestId].resolve();
-
-                delete this.requestCallbacks[data.requestId];
+                if (data.requestId in this.requestCallbacks) {
+                    this.requestCallbacks[data.requestId].resolve();
+                    delete this.requestCallbacks[data.requestId];
+                }
             } else if (event.data.eventName === PostMessageEventName.CreateObject) {
-                this.requestCallbacks[data.requestId].resolve(data.response as AMSCreateObjectResponse);
-
-                delete this.requestCallbacks[data.requestId];
+                if (data.requestId in this.requestCallbacks) {
+                    this.requestCallbacks[data.requestId].resolve(data.response as AMSCreateObjectResponse);
+                    delete this.requestCallbacks[data.requestId];
+                }
             } else if (event.data.eventName === PostMessageEventName.UploadDocument) {
-                this.requestCallbacks[data.requestId].resolve(data.response as FileMetadata);
-
-                delete this.requestCallbacks[data.requestId];
+                if (data.requestId in this.requestCallbacks) {
+                    this.requestCallbacks[data.requestId].resolve(data.response as FileMetadata);
+                    delete this.requestCallbacks[data.requestId];
+                }
             } else if (event.data.eventName === PostMessageEventName.GetViewStatus) {
-                this.requestCallbacks[data.requestId].resolve(data.response as AMSViewStatusResponse);
-
-                delete this.requestCallbacks[data.requestId];
+                if (data.requestId in this.requestCallbacks) {
+                    this.requestCallbacks[data.requestId].resolve(data.response as AMSViewStatusResponse);
+                    delete this.requestCallbacks[data.requestId];
+                }
             } else if (event.data.eventName === PostMessageEventName.GetView) {
-                this.requestCallbacks[data.requestId].resolve(data.response as Blob);
-
-                delete this.requestCallbacks[data.requestId];
+                if (data.requestId in this.requestCallbacks) {
+                    this.requestCallbacks[data.requestId].resolve(data.response as Blob);
+                    delete this.requestCallbacks[data.requestId];
+                }
             } else if (event.data.eventName === PostMessageEventName.SendTelemetry) {
-                this.logger?.log(data.logLevel, data.logData.Event, data.logData);
+                if (data.requestId in this.requestCallbacks) {
+                    this.logger?.log(data.logLevel, data.logData.Event, data.logData);
+                }
             }
         }
     }
