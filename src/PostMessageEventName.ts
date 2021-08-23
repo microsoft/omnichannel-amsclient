@@ -7,3 +7,5 @@ enum PostMessageEventName {
     GetView = 'AMSGetView',
     SendTelemetry = 'AMSSendTelemetry'
 }
+
+export default PostMessageEventName;
