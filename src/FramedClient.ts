@@ -224,8 +224,10 @@ class FramedClient {
         }
     }
 
-    public dispose() {
+    public dispose(): void {
         document.getElementById(this.iframeId)?.remove();
+        this.requestCallbacks = {};
+        this.iframeLoaded = false;
     }
 
     private async loadIframe(): Promise<void> {
