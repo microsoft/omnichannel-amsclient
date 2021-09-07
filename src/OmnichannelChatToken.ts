@@ -6,6 +6,7 @@ interface OmnichannelChatToken {
     token: string;
     visitorId?: string;
     voiceVideoCallToken?: string;
+    amsEndpoint?: string;
 }
 
 export default OmnichannelChatToken;
