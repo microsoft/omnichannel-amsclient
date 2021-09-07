@@ -20,7 +20,10 @@ interface RequestCallback {
 
 const version = sdkVersion;
 
+const iframePrefix = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
+
 class FramedClient {
+    private iframeId: string;
     private origin: string;
     private targetWindow!: Window; // Reference of window object that sent the message
     private requestCallbacks: Record<string, RequestCallback>;  // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -35,6 +38,7 @@ class FramedClient {
         this.debug = false;
         this.iframeLoaded = false;
         this.logger = logger;
+        this.iframeId = iframePrefix;
 
         this.onMessageEvent((event: MessageEvent) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
     }
@@ -220,12 +224,16 @@ class FramedClient {
         }
     }
 
-    private async loadIframe(): Promise<void> {
-        const iframeId = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
+    public dispose(): void {
+        document.getElementById(this.iframeId)?.remove();
+        this.requestCallbacks = {};
+        this.iframeLoaded = false;
+    }
 
+    private async loadIframe(): Promise<void> {
         return new Promise ((resolve, reject) => {
             const iframeElements = Array.from(document.getElementsByTagName('iframe'));
-            const foundIframeElement = iframeElements.filter(iframeElement => iframeElement.id == iframeId);
+            const foundIframeElement = iframeElements.filter(iframeElement => iframeElement.id == this.iframeId);
 
             // Avoid duplicate load
             if (foundIframeElement.length) {
@@ -233,7 +241,7 @@ class FramedClient {
             }
 
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
-            iframeElement.id = iframeId;
+            iframeElement.id = this.iframeId;
             iframeElement.src = `${baseUrl}/${version}/iframe.html?debug=${this.debug}&telemetry=true`;
 
             iframeElement.addEventListener('load', () => {
