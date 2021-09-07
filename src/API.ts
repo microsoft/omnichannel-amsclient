@@ -57,7 +57,7 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken.regionGTMS?.ams}/v1/skypetokenauth`;
+    const url = `${chatToken.amsEndpoint || chatToken.regionGTMS?.ams}/v1/skypetokenauth`;
 
     const headers = {
         [HeadersName.Authorization]: `skype_token ${chatToken.token}`,
@@ -96,7 +96,7 @@ const createObject = async (id: string, file: File, chatToken: OmnichannelChatTo
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken?.regionGTMS?.ams}/v1/objects`;
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects`;
 
     const headers = {
         ...createDefaultHeaders(chatToken.token),
@@ -125,7 +125,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken?.regionGTMS?.ams}/v1/objects/${documentId}/content/${file.type.includes('image')? 'imgpsh': 'original'}`;
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${documentId}/content/${file.type.includes('image')? 'imgpsh': 'original'}`;
 
     const headers = {
         ...createDefaultHeaders(chatToken.token),
@@ -160,7 +160,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken?.regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${validImageTypes.includes(fileMetadata.type)? 'imgpsh_fullsize_anim': 'original'}/status`;
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${validImageTypes.includes(fileMetadata.type)? 'imgpsh_fullsize_anim': 'original'}/status`;
 
     const headers = createDefaultHeaders(chatToken.token);
 
