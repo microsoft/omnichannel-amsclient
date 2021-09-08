@@ -75,7 +75,7 @@ class IframeCommunicator {
                         this.sendTelemetry(
                             LogLevel.ERROR,
                             {
-                                ChatId: data.chatToken.ChatId,
+                                ChatId: data.chatToken.chatId,
                                 AMSClientVersion: sdkVersion,
                                 Event: PostMessageEventName.SkypeTokenAuth,
                                 ExceptionDetails: {
@@ -92,7 +92,7 @@ class IframeCommunicator {
                     this.sendTelemetry(
                         LogLevel.ERROR,
                         {
-                            ChatId: data.chatToken.ChatId,
+                            ChatId: data.chatToken.chatId,
                             AMSClientVersion: sdkVersion,
                             Event: PostMessageEventName.SkypeTokenAuth,
                             ExceptionDetails: error
@@ -117,7 +117,7 @@ class IframeCommunicator {
                     this.sendTelemetry(
                         LogLevel.ERROR,
                         {
-                            ChatId: data.chatToken.ChatId,
+                            ChatId: data.chatToken.chatId,
                             AMSClientVersion: sdkVersion,
                             Event: PostMessageEventName.CreateObject,
                             ExceptionDetails: error
@@ -143,7 +143,7 @@ class IframeCommunicator {
                     this.sendTelemetry(
                         LogLevel.ERROR,
                         {
-                            ChatId: data.chatToken.ChatId,
+                            ChatId: data.chatToken.chatId,
                             AMSClientVersion: sdkVersion,
                             Event: PostMessageEventName.UploadDocument,
                             ExceptionDetails: error
@@ -169,7 +169,7 @@ class IframeCommunicator {
                     this.sendTelemetry(
                         LogLevel.ERROR,
                         {
-                            ChatId: data.chatToken.ChatId,
+                            ChatId: data.chatToken.chatId,
                             AMSClientVersion: sdkVersion,
                             Event: PostMessageEventName.GetViewStatus,
                             ExceptionDetails: error
@@ -195,7 +195,7 @@ class IframeCommunicator {
                     this.sendTelemetry(
                         LogLevel.ERROR,
                         {
-                            ChatId: data.chatToken.ChatId,
+                            ChatId: data.chatToken.chatId,
                             AMSClientVersion: sdkVersion,
                             Event: PostMessageEventName.GetView,
                             ExceptionDetails: error
