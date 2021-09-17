@@ -91,5 +91,15 @@ describe('FramedClient', () => {
         client.postMessage(PostMessageEventType.None, PostMessageEventName.SkypeTokenAuth, {}, () => {}, () => {});
 
         expect((client as any).targetWindow.postMessage).toHaveBeenCalledTimes(1);
-    })
+    });
+
+    it('FramedClient.dispose() should clean up', async () => {
+        const client = new FramedClient();
+
+        (client as any).iframeLoaded = true;
+
+        client.dispose();
+
+        expect((client as any).iframeLoaded).toBe(false);
+    });
 });
