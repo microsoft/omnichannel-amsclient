@@ -57,6 +57,9 @@ class IframeCommunicator {
     }
 
     public async handleEvent(event: MessageEvent<any>): Promise<void> {  // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (event.data.clientId !== this.clientId) {
+            return;
+        }
 
         // Listens to incoming requests & calls AMS
         if (event.data.eventType === PostMessageEventType.Request) {

@@ -189,6 +189,10 @@ class FramedClient {
             return;
         }
 
+        if (event.data.clientId !== this.clientId) {
+            return;
+        }
+
         /* istanbul ignore next */
         this.debug && console.log(event);
 
