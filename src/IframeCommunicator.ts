@@ -1,4 +1,5 @@
 import API from "./API";
+import fetchClientId from "./utils/fetchClientId";
 import fetchDebugConfig from "./utils/fetchDebugConfig";
 import fetchTelemetryConfig from "./utils/fetchTelemetryConfig";
 import PostMessageEventName from "./PostMessageEventName";
@@ -11,12 +12,14 @@ import { sdkVersion } from "./config";
 
 
 class IframeCommunicator {
+    private clientId: string;
     private sourceWindow: Window;
     private targetWindow: Window;
     private debug: boolean;
     private telemetryEnabled: boolean;
 
-    constructor() {
+    constructor(clientId: string) {
+        this.clientId = clientId;
         this.sourceWindow = window;
         this.targetWindow = window.parent;
         this.debug = false;
@@ -45,6 +48,7 @@ class IframeCommunicator {
 
     public postMessage(eventType: PostMessageEventType, eventName: PostMessageEventName, data: PostMessageRequestData = {}, eventStatus: PostMessageEventStatus): void {
         this.targetWindow.postMessage({
+            clientId: this.clientId,
             eventType,
             eventName,
             eventStatus,
@@ -221,12 +225,13 @@ class IframeCommunicator {
 export default IframeCommunicator;
 
 (() => {
+    const clientId = fetchClientId();
     const telemetryConfig = fetchTelemetryConfig();
     const debugConfig = fetchDebugConfig();
 
     !debugConfig.disable && console.log("[IframeCommunicator][init]");
 
-    const iframeCommunicator = new IframeCommunicator();
+    const iframeCommunicator = new IframeCommunicator(clientId);
     iframeCommunicator.initialize();
     iframeCommunicator.setDebug(!debugConfig.disable);
     !telemetryConfig.disable && iframeCommunicator.enableTelemetry();
