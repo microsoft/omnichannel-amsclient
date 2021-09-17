@@ -4,6 +4,7 @@ import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
 import {baseUrl, sdkVersion} from "./config";
 import FileMetadata from "./FileMetadata";
+import FramedClientConfig from "./FramedClientConfig";
 import GlobalConfiguration from "./GlobalConfiguration";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
@@ -33,14 +34,14 @@ class FramedClient {
     private chatToken!: OmnichannelChatToken;
     private logger?: AMSLogger;
 
-    constructor(logger: AMSLogger | undefined = undefined) {
+    constructor(logger: AMSLogger | undefined = undefined, framedClientConfig: FramedClientConfig | undefined = undefined) {
         this.clientId = uuidv4();
         this.origin = window.location.origin;
         this.requestCallbacks = {};
         this.debug = false;
         this.iframeLoaded = false;
         this.logger = logger;
-        this.iframeId = iframePrefix;
+        this.iframeId = (framedClientConfig as FramedClientConfig).multiClient? this.clientId: iframePrefix;
     }
 
     /* istanbul ignore next */
