@@ -13,23 +13,30 @@ describe('FramedClient', () => {
         jest.clearAllMocks();
     });
 
-    it('FramedClient.initialize() should call loadIframe()', async () => {
+    it('FramedClient.setup() should call loadIframe()', async () => {
         const client = new FramedClient();
 
         (client as any).loadIframe = jest.fn();
 
-        const token = {
-            chatId: '',
-            token: ''
-        };
-
-        jest.spyOn(client, 'skypeTokenAuth').mockResolvedValue(Promise.resolve({}) as any);
-
-        await client.initialize({chatToken: token});
+        await client.setup();
 
         expect((client as any).loadIframe).toHaveBeenCalledTimes(1);
     });
 
+    it('FramedClient.setup() throw an error if platform is not browser', async () => {
+        platform.isBrowser = jest.fn(() => false);
+
+        const client = new FramedClient();
+
+        (client as any).loadIframe = jest.fn();
+        (client as any).iframeLoaded = true;
+
+        try {
+            await client.setup();
+        } catch (error) {
+            expect(error).not.toBe(undefined);
+        }
+    });
 
     it('FramedClient.initialize() should call skypeTokenAuth()', async () => {
         const client = new FramedClient();
@@ -47,26 +54,6 @@ describe('FramedClient', () => {
         await client.initialize({chatToken: token});
 
         expect(client.skypeTokenAuth).toHaveBeenCalledTimes(1);
-    });
-
-    it('FramedClient.initialize() throw an error if platform is not browser', async () => {
-        platform.isBrowser = jest.fn(() => false);
-
-        const client = new FramedClient();
-
-        (client as any).loadIframe = jest.fn();
-        (client as any).iframeLoaded = true;
-
-        const token = {
-            chatId: '',
-            token: ''
-        };
-
-        try {
-            await client.initialize({chatToken: token});
-        } catch (error) {
-            expect(error).not.toBe(undefined);
-        }
     });
 
     it('FramedClient.fetchBlob() should fetch the content URL', async () => {
