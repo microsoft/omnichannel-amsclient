@@ -30,6 +30,10 @@ class FramedlessClient {
         this.debug = flag;
     }
 
+    public async setup(): Promise<void> {
+        return Promise.resolve();
+    }
+
     public async initialize(initConfig: InitConfig): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedlessClient][initialize]`);
