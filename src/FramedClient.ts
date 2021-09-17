@@ -23,6 +23,7 @@ const version = sdkVersion;
 const iframePrefix = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
 
 class FramedClient {
+    private clientId: string;
     private iframeId: string;
     private origin: string;
     private targetWindow!: Window; // Reference of window object that sent the message
@@ -33,6 +34,7 @@ class FramedClient {
     private logger?: AMSLogger;
 
     constructor(logger: AMSLogger | undefined = undefined) {
+        this.clientId = uuidv4();
         this.origin = window.location.origin;
         this.requestCallbacks = {};
         this.debug = false;
@@ -168,6 +170,7 @@ class FramedClient {
         }
 
         this.targetWindow.postMessage({
+            clientId: this.clientId,
             requestId,
             eventType,
             eventName,
@@ -242,7 +245,7 @@ class FramedClient {
 
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
             iframeElement.id = this.iframeId;
-            iframeElement.src = `${baseUrl}/${version}/iframe.html?debug=${this.debug}&telemetry=true`;
+            iframeElement.src = `${baseUrl}/${version}/iframe.html?clientId=${this.clientId}&debug=${this.debug}&telemetry=true`;
 
             iframeElement.addEventListener('load', () => {
                 /* istanbul ignore next */
