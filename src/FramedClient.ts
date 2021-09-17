@@ -41,7 +41,11 @@ class FramedClient {
         this.debug = false;
         this.iframeLoaded = false;
         this.logger = logger;
-        this.iframeId = (framedClientConfig as FramedClientConfig).multiClient? this.clientId: iframePrefix;
+        this.iframeId = iframePrefix;
+
+        if (framedClientConfig && framedClientConfig.multiClient) {
+            this.iframeId = this.clientId;
+        }
     }
 
     /* istanbul ignore next */
