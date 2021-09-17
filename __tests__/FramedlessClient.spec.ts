@@ -7,6 +7,11 @@ import FramedlessClient from "../src/FramedlessClient";
 
 describe('FramedlessClient', () => {
 
+    it('FramedlessClient.setup() should be callable', async () => {
+        const client = new FramedlessClient();
+        expect(await client.setup()).toBe(undefined);
+    });
+
     it('FramedlessClient.initialize() should call skypeTokenAuth()', async () => {
         const client = new FramedlessClient();
         const token = {
