@@ -7,3 +7,4 @@ All notable changes to this project will be documented in this file.
 - Prevent multiple iframes being loaded
 - Add `dispose()` on `FramedClient`
 - Use `amsEndpoint` property by default
+- Add `silentError` option

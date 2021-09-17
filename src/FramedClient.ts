@@ -4,6 +4,7 @@ import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
 import {baseUrl, sdkVersion} from "./config";
 import FileMetadata from "./FileMetadata";
+import GlobalConfiguration from "./GlobalConfiguration";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
 import platform from "./utils/platform";
@@ -11,7 +12,6 @@ import PostMessageEventName from "./PostMessageEventName";
 import PostMessageEventType from "./PostMessageEventType";
 import PostMessageRequestData from "./PostMessageRequestData";
 import { uuidv4 } from "./utils/uuid";
-
 
 interface RequestCallback {
     resolve: CallableFunction,
@@ -59,7 +59,7 @@ class FramedClient {
         await this.loadIframe();
 
         if (!this.iframeLoaded) {
-            console.error('iframe not loaded');
+            !GlobalConfiguration.silentError && console.error('iframe not loaded');
         }
 
         this.chatToken = initConfig.chatToken;
@@ -146,7 +146,7 @@ class FramedClient {
             const blobResponse = await response.blob();
             return blobResponse;
         } catch (error) {
-            console.log(error);
+            !GlobalConfiguration.silentError && console.log(error);
             throw new Error('fetchBlob');
         }
     }
@@ -163,7 +163,7 @@ class FramedClient {
         }
 
         if (!this.targetWindow) {
-            console.error('Target window not found!');
+            !GlobalConfiguration.silentError && console.error('Target window not found!');
             return;
         }
 
