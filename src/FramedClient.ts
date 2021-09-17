@@ -41,8 +41,6 @@ class FramedClient {
         this.iframeLoaded = false;
         this.logger = logger;
         this.iframeId = iframePrefix;
-
-        this.onMessageEvent((event: MessageEvent) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
     /* istanbul ignore next */
@@ -50,9 +48,11 @@ class FramedClient {
         this.debug = flag;
     }
 
-    public async initialize(initConfig: InitConfig): Promise<void> {
+    public async setup(): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][initialize]`);
+
+        this.onMessageEvent((event: MessageEvent) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
 
         if (!platform.isBrowser()) {
             throw new Error('FramedMode was used in non-Web platform');
@@ -63,6 +63,11 @@ class FramedClient {
         if (!this.iframeLoaded) {
             !GlobalConfiguration.silentError && console.error('iframe not loaded');
         }
+    }
+
+    public async initialize(initConfig: InitConfig): Promise<void> {
+        /* istanbul ignore next */
+        this.debug && console.log(`[FramedClient][initialize]`);
 
         this.chatToken = initConfig.chatToken;
 
