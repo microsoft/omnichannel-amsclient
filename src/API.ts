@@ -35,7 +35,7 @@ interface AMSHeaders {
     [HeadersName.AcceptEncoding]?: string;
 }
 
-const validImageTypes = ['jpeg', 'jpg', 'gif', 'png', 'heic','heif','webp'];
+const validImageTypes = ['jpeg', 'jpg', 'gif', 'png', 'heic', 'heif', 'webp'];
 
 const patchChatToken = (chatToken: OmnichannelChatToken) => {
     // Temporary
