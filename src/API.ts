@@ -47,7 +47,7 @@ interface AMSHeaders {
     [HeadersName.AcceptEncoding]?: string;
 }
 
-const validImageTypes = ['jpeg', 'jpg', 'gif', 'png', 'heic', 'heif', 'webp'];
+const amsValidImageTypes = ['jpeg', 'jpg', 'gif', 'png', 'heic', 'heif', 'webp'];
 
 const patchChatToken = (chatToken: OmnichannelChatToken) => {
     // Temporary
@@ -100,7 +100,7 @@ const getTypeFromFile = (type: string, name: string, operation: string) => {
     if (type.includes('image')) {
         const stripFileName = name.split('.');
         if (stripFileName.length > 1) {
-            if (validImageTypes.includes(stripFileName[1])) {
+            if (amsValidImageTypes.includes(stripFileName[1])) {
                 return operation === Operation.Create ? DocumentTypes.CreateImage : DocumentTypes.UploadImage;
             } else {
                 return operation === Operation.Create ? DocumentTypes.CreateDocument : DocumentTypes.UploadDocument;
@@ -186,7 +186,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${validImageTypes.includes(fileMetadata.type) ? 'imgpsh_fullsize_anim' : 'original'}/status`;
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${amsValidImageTypes.includes(fileMetadata.type) ? 'imgpsh_fullsize_anim' : 'original'}/status`;
 
     const headers = createDefaultHeaders(chatToken.token);
 
@@ -229,7 +229,7 @@ const getView = async (fileMetadata: FileMetadata, viewLocation: string, chatTok
 
     const headers = createDefaultHeaders(chatToken.token);
 
-    if (validImageTypes.includes(fileMetadata.type)) {
+    if (amsValidImageTypes.includes(fileMetadata.type)) {
         headers[HeadersName.Accept] = 'image/webp,image/ *,*/*;q=0.8';
         headers[HeadersName.AcceptEncoding] = 'gzip, deflate, sdch, br';
     }
