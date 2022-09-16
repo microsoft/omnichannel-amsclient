@@ -5,6 +5,18 @@ import FileMetadata from "./FileMetadata";
 import GlobalConfiguration from "./GlobalConfiguration";
 import OmnichannelChatToken from "./OmnichannelChatToken";
 
+enum Operation {
+    Create = "Create",
+    Upload = "Upload"
+}
+
+enum DocumentTypes {
+    CreateDocument = 'sharing/file',
+    UploadDocument = 'original',
+    CreateImage = 'pish/image',
+    UploadImage = 'imgpsh'
+}
+
 enum HeadersName {
     Accept = 'Accept',
     AcceptEncoding = 'Accept-Encoding',
@@ -82,23 +94,37 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
     }
 }
 
+
+const getTypeFromFile = (type: string, name: string, operation: string) => {
+
+    if (type.includes('image')) {
+        const stripFileName = name.split('.');
+        if (stripFileName.length > 1) {
+            if (validImageTypes.includes(stripFileName[1])) {
+                return operation === Operation.Create ? DocumentTypes.CreateImage : DocumentTypes.UploadImage;
+            } else {
+                return operation === Operation.Create ? DocumentTypes.CreateDocument : DocumentTypes.UploadDocument;
+            }
+        }
+    }
+    return operation === Operation.Create ? DocumentTypes.CreateDocument : DocumentTypes.UploadDocument;
+}
+
 const createObject = async (id: string, file: File, chatToken: OmnichannelChatToken): Promise<AMSCreateObjectResponse> => {
     GlobalConfiguration.debug && console.log(`[API][createObject]`);
 
     const permissions = {
         [id]: ['read']
     };
-
+    const typeObject = getTypeFromFile(file.type, file.name, Operation.Create);
     const body = {
         filename: file.name,
         permissions,
-        type: file.type.includes('image')? 'pish/image': 'sharing/file'
+        type: typeObject
     };
-
     patchChatToken(chatToken);
 
     const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects`;
-
     const headers = {
         ...createDefaultHeaders(chatToken.token),
         [HeadersName.ContentType]: MIMEType.applicationJson
@@ -126,8 +152,8 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${documentId}/content/${file.type.includes('image')? 'imgpsh': 'original'}`;
-
+    const typeObject = getTypeFromFile(file.type, file.name, Operation.Upload);
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${documentId}/content/${typeObject}`;
     const headers = {
         ...createDefaultHeaders(chatToken.token),
         [HeadersName.ContentType]: MIMEType.applicationFormUrlEncoded
@@ -136,9 +162,8 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
     const request = {
         headers,
         method: 'PUT',
-        body: (file as any).data? (file as AMSFileInfo).data: file as File  // eslint-disable-line @typescript-eslint/no-explicit-any
+        body: (file as any).data ? (file as AMSFileInfo).data : file as File  // eslint-disable-line @typescript-eslint/no-explicit-any
     };
-
     try {
         await fetch(url, request as RequestInit);
         const fileMetadata = {
@@ -161,7 +186,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${validImageTypes.includes(fileMetadata.type)? 'imgpsh_fullsize_anim': 'original'}/status`;
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${validImageTypes.includes(fileMetadata.type) ? 'imgpsh_fullsize_anim' : 'original'}/status`;
 
     const headers = createDefaultHeaders(chatToken.token);
 
@@ -174,7 +199,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
         const response = await fetch(url, request);
         const jsonResponse = await response.json();
 
-        const {content_state, view_state, view_location} = jsonResponse;
+        const { content_state, view_state, view_location } = jsonResponse;
 
         if (!view_location) {
             throw new Error('view_location is empty');
