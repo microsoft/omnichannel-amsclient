@@ -109,9 +109,9 @@ const defineTypeForOperation = (fileType: string, fileName: string, apiOperation
         if (stripFileName) {
             if (amsValidImageTypes.includes(stripFileName)) {
                 return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateImageType : DocumentTypes.UploadImageType;
-            } else {
-                return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
             }
+            return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
+
         }
     }
     return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
