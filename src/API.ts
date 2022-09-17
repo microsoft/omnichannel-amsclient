@@ -94,13 +94,20 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
     }
 }
 
+const extractExtensionFromFileName = (fileName : string) : string => {
+    if (fileName){
+        //this return the pure extension , or the whole name in case of not '.' in the string
+        return fileName.substring(fileName.lastIndexOf('.')+1);
+    }
+    return fileName;
+}
 
 const defineTypeForOperation = (fileType: string, fileName: string, apiOperation: string) => {
 
     if (fileType.includes('image')) {
-        const stripFileName = fileName.split('.');
-        if (stripFileName.length > 1) {
-            if (amsValidImageTypes.includes(stripFileName[1])) {
+        const stripFileName = extractExtensionFromFileName(fileName);
+        if (stripFileName) {
+            if (amsValidImageTypes.includes(stripFileName)) {
                 return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateImageType : DocumentTypes.UploadImageType;
             } else {
                 return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
