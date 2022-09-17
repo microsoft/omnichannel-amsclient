@@ -5,16 +5,16 @@ import FileMetadata from "./FileMetadata";
 import GlobalConfiguration from "./GlobalConfiguration";
 import OmnichannelChatToken from "./OmnichannelChatToken";
 
-enum Operation {
+enum AmsApiOperation {
     Create = "Create",
     Upload = "Upload"
 }
 
 enum DocumentTypes {
-    CreateDocument = 'sharing/file',
-    UploadDocument = 'original',
-    CreateImage = 'pish/image',
-    UploadImage = 'imgpsh'
+    CreateDocumentType = 'sharing/file',
+    UploadDocumentType = 'original',
+    CreateImageType = 'pish/image',
+    UploadImageType = 'imgpsh'
 }
 
 enum HeadersName {
@@ -95,19 +95,19 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
 }
 
 
-const getTypeFromFile = (type: string, name: string, operation: string) => {
+const defineTypeForOperation = (fileType: string, fileName: string, apiOperation: string) => {
 
-    if (type.includes('image')) {
-        const stripFileName = name.split('.');
+    if (fileType.includes('image')) {
+        const stripFileName = fileName.split('.');
         if (stripFileName.length > 1) {
             if (amsValidImageTypes.includes(stripFileName[1])) {
-                return operation === Operation.Create ? DocumentTypes.CreateImage : DocumentTypes.UploadImage;
+                return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateImageType : DocumentTypes.UploadImageType;
             } else {
-                return operation === Operation.Create ? DocumentTypes.CreateDocument : DocumentTypes.UploadDocument;
+                return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
             }
         }
     }
-    return operation === Operation.Create ? DocumentTypes.CreateDocument : DocumentTypes.UploadDocument;
+    return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
 }
 
 const createObject = async (id: string, file: File, chatToken: OmnichannelChatToken): Promise<AMSCreateObjectResponse> => {
@@ -116,7 +116,7 @@ const createObject = async (id: string, file: File, chatToken: OmnichannelChatTo
     const permissions = {
         [id]: ['read']
     };
-    const typeObject = getTypeFromFile(file.type, file.name, Operation.Create);
+    const typeObject = defineTypeForOperation(file.type, file.name, AmsApiOperation.Create);
     const body = {
         filename: file.name,
         permissions,
@@ -152,7 +152,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
 
     patchChatToken(chatToken);
 
-    const typeObject = getTypeFromFile(file.type, file.name, Operation.Upload);
+    const typeObject = defineTypeForOperation(file.type, file.name, AmsApiOperation.Upload);
     const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${documentId}/content/${typeObject}`;
     const headers = {
         ...createDefaultHeaders(chatToken.token),
