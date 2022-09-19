@@ -94,12 +94,12 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
     }
 }
 
-const extractExtensionFromFileName = (fileName : string) : string => {
-    if (fileName){
+const extractExtensionFromFileName = (fileName: string): string | undefined => {
+    if (fileName) {
         //this return the pure extension , or the whole name in case of not '.' in the string
-        return fileName.substring(fileName.lastIndexOf('.')+1);
+        return fileName.substring(fileName.lastIndexOf('.') + 1);
     }
-    return fileName;
+    return undefined;
 }
 
 const defineTypeForOperation = (fileType: string, fileName: string, apiOperation: string) => {
