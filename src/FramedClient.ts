@@ -2,7 +2,7 @@ import AMSCreateObjectResponse from "./AMSCreateObjectResponse";
 import AMSFileInfo from "./AMSFileInfo";
 import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
-import {baseUrl, sdkVersion} from "./config";
+import { baseUrl, sdkVersion } from "./config";
 import FileMetadata from "./FileMetadata";
 import FramedClientConfig from "./FramedClientConfig";
 import GlobalConfiguration from "./GlobalConfiguration";
@@ -93,13 +93,14 @@ class FramedClient {
         })
     }
 
-    public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null): Promise<void> {
+    public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][createObject]`);
         const data = {
             id,
             file,
-            chatToken: chatToken || this.chatToken
+            chatToken: chatToken || this.chatToken,
+            supportedImagesMimeTypes
         };
 
         await this.loadIframe();
@@ -109,13 +110,14 @@ class FramedClient {
         })
     }
 
-    public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null): Promise<void> {
+    public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][uploadDocument]`);
         const data = {
             documentId,
             file,
-            chatToken: chatToken || this.chatToken
+            chatToken: chatToken || this.chatToken,
+            supportedImagesMimeTypes
         };
 
         await this.loadIframe();
@@ -125,10 +127,11 @@ class FramedClient {
         })
     }
 
-    public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null): Promise<void> {
+    public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
         const data = {
             fileMetadata,
-            chatToken: chatToken || this.chatToken
+            chatToken: chatToken || this.chatToken,
+            supportedImagesMimeTypes
         }
 
         await this.loadIframe();
@@ -138,11 +141,12 @@ class FramedClient {
         })
     }
 
-    public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null): Promise<void> {
+    public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
         const data = {
             fileMetadata,
             viewLocation,
-            chatToken: chatToken || this.chatToken
+            chatToken: chatToken || this.chatToken,
+            supportedImagesMimeTypes
         }
 
         await this.loadIframe();
@@ -208,7 +212,7 @@ class FramedClient {
         if (event.data.eventType === PostMessageEventType.Response) {
             /* istanbul ignore next */
             this.debug && console.log(`[FramedClient][Response]`);
-            const {data} = event;
+            const { data } = event;
 
             if (event.data.eventName === PostMessageEventName.SkypeTokenAuth) {
                 if (data.requestId in this.requestCallbacks) {
@@ -248,7 +252,7 @@ class FramedClient {
     }
 
     private async loadIframe(): Promise<void> {
-        return new Promise ((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const iframeElements = Array.from(document.getElementsByTagName('iframe'));
             const foundIframeElement = iframeElements.filter(iframeElement => iframeElement.id == this.iframeId);
 
