@@ -93,7 +93,7 @@ class FramedClient {
         })
     }
 
-    public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
+    public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][createObject]`);
         const data = {
@@ -110,7 +110,7 @@ class FramedClient {
         })
     }
 
-    public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
+    public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][uploadDocument]`);
         const data = {
@@ -127,7 +127,7 @@ class FramedClient {
         })
     }
 
-    public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
+    public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
         const data = {
             fileMetadata,
             chatToken: chatToken || this.chatToken,
@@ -141,7 +141,7 @@ class FramedClient {
         })
     }
 
-    public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<void> {
+    public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
         const data = {
             fileMetadata,
             viewLocation,

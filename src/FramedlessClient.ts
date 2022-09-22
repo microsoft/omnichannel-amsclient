@@ -67,7 +67,7 @@ class FramedlessClient {
         }
     }
 
-    public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<AMSCreateObjectResponse> {
+    public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<AMSCreateObjectResponse> {
         try {
             const response = await API.createObject(id, file, chatToken || this.chatToken, supportedImagesMimeTypes);
             return response;
@@ -82,7 +82,7 @@ class FramedlessClient {
         }
     }
 
-    public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<FileMetadata> {
+    public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<FileMetadata> {
         try {
             const response = await API.uploadDocument(documentId, file, chatToken || this.chatToken, supportedImagesMimeTypes);
             return response;
@@ -97,7 +97,7 @@ class FramedlessClient {
         }
     }
 
-    public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<AMSViewStatusResponse> {
+    public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<AMSViewStatusResponse> {
         try {
             const response = await API.getViewStatus(fileMetadata, chatToken || this.chatToken, supportedImagesMimeTypes);
             return response;
@@ -112,7 +112,7 @@ class FramedlessClient {
         }
     }
 
-    public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes?: string[]): Promise<Blob> {
+    public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<Blob> {
         try {
             const response = await API.getView(fileMetadata, viewLocation, chatToken || this.chatToken, supportedImagesMimeTypes);
             return response;
