@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.1.2] - 2022-09-23
 ### Fixed
 - Update logic to use MIME types to decide whether image or document endpoint to be used
 
