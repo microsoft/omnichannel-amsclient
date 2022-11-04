@@ -1,14 +1,16 @@
+import AMSLogData from "./AMSLogData";
 import API from "./API";
 import fetchClientId from "./utils/fetchClientId";
 import fetchDebugConfig from "./utils/fetchDebugConfig";
 import fetchTelemetryConfig from "./utils/fetchTelemetryConfig";
+import PluggableLogger from "./PluggableLogger";
 import PostMessageEventName from "./PostMessageEventName";
 import PostMessageEventStatus from "./PostMessageEventStatus";
 import PostMessageEventType from "./PostMessageEventType";
 import PostMessageRequestData from "./PostMessageRequestData";
 import LogLevel from "./LogLevel";
-import AMSLogData from "./AMSLogData";
-import { sdkVersion } from "./config";
+import ScenarioMarker from "./telemetry/ScenarioMarker";
+import AMSLogger from "./AMSLogger";
 
 
 class IframeCommunicator {
@@ -17,6 +19,8 @@ class IframeCommunicator {
     private targetWindow: Window;
     private debug: boolean;
     private telemetryEnabled: boolean;
+    private logger: PluggableLogger;
+    private scenarioMarker;
 
     constructor(clientId: string) {
         this.clientId = clientId;
@@ -24,6 +28,12 @@ class IframeCommunicator {
         this.targetWindow = window.parent;
         this.debug = false;
         this.telemetryEnabled = false;
+        this.logger = {
+            logClientSdkTelemetryEvent: (logLevel: LogLevel, event: AMSLogData) => {
+                this.sendTelemetry(logLevel, event);
+            }
+        };
+        this.scenarioMarker = new ScenarioMarker(new AMSLogger(this.logger));
     }
 
     public setDebug(flag: boolean): void {
@@ -67,6 +77,11 @@ class IframeCommunicator {
             const {data} = event;
 
             if (event.data.eventName === PostMessageEventName.SkypeTokenAuth) {
+                this.scenarioMarker.startScenario(PostMessageEventName.SkypeTokenAuth, {
+                    AMSClientRuntimeId: data.runtimeId,
+                    ChatId: data.chatToken.chatId
+                });
+
                 try {
                     const response = await API.skypeTokenAuth(data.chatToken);
                     const postMessageData = {
@@ -78,37 +93,36 @@ class IframeCommunicator {
 
                     if (!response.ok) {
                         postMessageData.eventStatus = PostMessageEventStatus.Failure;
-
-                        this.sendTelemetry(
-                            LogLevel.ERROR,
-                            {
-                                AMSClientRuntimeId: data.runtimeId,
-                                ChatId: data.chatToken.chatId,
-                                AMSClientVersion: sdkVersion,
-                                Event: PostMessageEventName.SkypeTokenAuth,
-                                ExceptionDetails: {
-                                    status: response.status
-                                }
+                        this.scenarioMarker.failScenario(PostMessageEventName.SkypeTokenAuth, {
+                            AMSClientRuntimeId: data.runtimeId,
+                            ChatId: data.chatToken.chatId,
+                            ExceptionDetails: {
+                                status: response.status
                             }
-                        )
+                        });
+                    } else {
+                        this.scenarioMarker.completeScenario(PostMessageEventName.SkypeTokenAuth, {
+                            AMSClientRuntimeId: data.runtimeId,
+                            ChatId: data.chatToken.chatId,
+                        });
                     }
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.SkypeTokenAuth, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.SkypeTokenAuth, {}, PostMessageEventStatus.Failure);
 
-                    this.sendTelemetry(
-                        LogLevel.ERROR,
-                        {
-                            AMSClientRuntimeId: data.runtimeId,
-                            ChatId: data.chatToken.chatId,
-                            AMSClientVersion: sdkVersion,
-                            Event: PostMessageEventName.SkypeTokenAuth,
-                            ExceptionDetails: error
-                        }
-                    )
+                    this.scenarioMarker.failScenario(PostMessageEventName.SkypeTokenAuth, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        ExceptionDetails: error
+                    });
                 }
             } else if (event.data.eventName === PostMessageEventName.CreateObject) {
+                this.scenarioMarker.startScenario(PostMessageEventName.CreateObject, {
+                    AMSClientRuntimeId: data.runtimeId,
+                    ChatId: data.chatToken.chatId
+                });
+
                 try {
                     const response = await API.createObject(data.id, data.file, data.chatToken);
                     const postMessageData = {
@@ -119,22 +133,29 @@ class IframeCommunicator {
                         response,
                     };
 
+                    this.scenarioMarker.completeScenario(PostMessageEventName.CreateObject, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        DocumentId: response?.id
+                    });
+
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, {}, PostMessageEventStatus.Failure);
 
-                    this.sendTelemetry(
-                        LogLevel.ERROR,
-                        {
-                            AMSClientRuntimeId: data.runtimeId,
-                            ChatId: data.chatToken.chatId,
-                            AMSClientVersion: sdkVersion,
-                            Event: PostMessageEventName.CreateObject,
-                            ExceptionDetails: error
-                        }
-                    )
+                    this.scenarioMarker.failScenario(PostMessageEventName.CreateObject, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        ExceptionDetails: error
+                    });
                 }
             } else if (event.data.eventName === PostMessageEventName.UploadDocument) {
+                this.scenarioMarker.startScenario(PostMessageEventName.UploadDocument, {
+                    AMSClientRuntimeId: data.runtimeId,
+                    ChatId: data.chatToken.chatId,
+                    DocumentId: data.documentId
+                });
+
                 try {
                     const response = await API.uploadDocument(data.documentId, data.file, data.chatToken);
                     const postMessageData = {
@@ -146,22 +167,30 @@ class IframeCommunicator {
                         data: response,
                     };
 
+                    this.scenarioMarker.completeScenario(PostMessageEventName.UploadDocument, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        DocumentId: data.documentId
+                    });
+
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, {}, PostMessageEventStatus.Failure);
 
-                    this.sendTelemetry(
-                        LogLevel.ERROR,
-                        {
-                            AMSClientRuntimeId: data.runtimeId,
-                            ChatId: data.chatToken.chatId,
-                            AMSClientVersion: sdkVersion,
-                            Event: PostMessageEventName.UploadDocument,
-                            ExceptionDetails: error
-                        }
-                    )
+                    this.scenarioMarker.failScenario(PostMessageEventName.UploadDocument, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        DocumentId: data.documentId,
+                        ExceptionDetails: error
+                    });
                 }
             } else if (event.data.eventName === PostMessageEventName.GetViewStatus) {
+                this.scenarioMarker.startScenario(PostMessageEventName.GetViewStatus, {
+                    AMSClientRuntimeId: data.runtimeId,
+                    ChatId: data.chatToken.chatId,
+                    DocumentId: data.fileMetadata?.id
+                });
+
                 try {
                     const response = await API.getViewStatus(data.fileMetadata, data.chatToken);
                     const postMessageData = {
@@ -173,22 +202,30 @@ class IframeCommunicator {
                         data: response,
                     };
 
+                    this.scenarioMarker.completeScenario(PostMessageEventName.GetViewStatus, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        DocumentId: data.fileMetadata?.id
+                    });
+
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetViewStatus, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetViewStatus, {}, PostMessageEventStatus.Failure);
 
-                    this.sendTelemetry(
-                        LogLevel.ERROR,
-                        {
-                            AMSClientRuntimeId: data.runtimeId,
-                            ChatId: data.chatToken.chatId,
-                            AMSClientVersion: sdkVersion,
-                            Event: PostMessageEventName.GetViewStatus,
-                            ExceptionDetails: error
-                        }
-                    )
+                    this.scenarioMarker.failScenario(PostMessageEventName.GetViewStatus, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        DocumentId: data.fileMetadata?.id,
+                        ExceptionDetails: error
+                    });
                 }
             } else if (event.data.eventName === PostMessageEventName.GetView) {
+                this.scenarioMarker.startScenario(PostMessageEventName.GetView, {
+                    AMSClientRuntimeId: data.runtimeId,
+                    ChatId: data.chatToken.chatId,
+                    DocumentId: data.fileMetadata?.id
+                });
+
                 try {
                     const response = await API.getView(data.fileMetadata, data.viewLocation, data.chatToken);
                     const postMessageData = {
@@ -200,20 +237,22 @@ class IframeCommunicator {
                         data: response,
                     };
 
+                    this.scenarioMarker.completeScenario(PostMessageEventName.GetView, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        DocumentId: data.fileMetadata?.id
+                    });
+
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetView, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetView, {}, PostMessageEventStatus.Failure);
 
-                    this.sendTelemetry(
-                        LogLevel.ERROR,
-                        {
-                            AMSClientRuntimeId: data.runtimeId,
-                            ChatId: data.chatToken.chatId,
-                            AMSClientVersion: sdkVersion,
-                            Event: PostMessageEventName.GetView,
-                            ExceptionDetails: error
-                        }
-                    )
+                    this.scenarioMarker.failScenario(PostMessageEventName.GetView, {
+                        AMSClientRuntimeId: data.runtimeId,
+                        ChatId: data.chatToken.chatId,
+                        DocumentId: data.fileMetadata?.id,
+                        ExceptionDetails: error
+                    });
                 }
             }
         }
