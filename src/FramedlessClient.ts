@@ -10,13 +10,16 @@ import OmnichannelChatToken from "./OmnichannelChatToken";
 import PostMessageEventName from "./PostMessageEventName";
 import platform from "./utils/platform";
 import { sdkVersion } from "./config";
+import { uuidv4 } from "./utils/uuid";
 
 class FramedlessClient {
+    private runtimeId: string;
     private debug: boolean;
     private chatToken!: OmnichannelChatToken;
     private logger?: AMSLogger;
 
     constructor(logger: AMSLogger | undefined = undefined) {
+        this.runtimeId = uuidv4();
         this.debug = false;
         this.logger = logger;
 
@@ -48,6 +51,7 @@ class FramedlessClient {
             const response = await API.skypeTokenAuth(chatToken || this.chatToken);
             if (!response.ok) {
                 this.logger?.log(LogLevel.ERROR, PostMessageEventName.SkypeTokenAuth, {
+                    AMSClientRuntimeId: this.runtimeId,
                     ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                     AMSClientVersion: sdkVersion,
                     ExceptionDetails: {
@@ -58,6 +62,7 @@ class FramedlessClient {
             return response;
         } catch (error) {
             this.logger?.log(LogLevel.ERROR, PostMessageEventName.SkypeTokenAuth, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
                 AMSClientVersion: sdkVersion,
                 ExceptionDetails: error
@@ -73,6 +78,7 @@ class FramedlessClient {
             return response;
         } catch (error) {
             this.logger?.log(LogLevel.ERROR, PostMessageEventName.CreateObject, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
                 AMSClientVersion: sdkVersion,
                 ExceptionDetails: error
@@ -88,6 +94,7 @@ class FramedlessClient {
             return response;
         } catch (error) {
             this.logger?.log(LogLevel.ERROR, PostMessageEventName.UploadDocument, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
                 AMSClientVersion: sdkVersion,
                 ExceptionDetails: error
@@ -103,6 +110,7 @@ class FramedlessClient {
             return response;
         } catch (error) {
             this.logger?.log(LogLevel.ERROR, PostMessageEventName.GetViewStatus, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
                 AMSClientVersion: sdkVersion,
                 ExceptionDetails: error
@@ -118,6 +126,7 @@ class FramedlessClient {
             return response;
         } catch (error) {
             this.logger?.log(LogLevel.ERROR, PostMessageEventName.GetView, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
                 AMSClientVersion: sdkVersion,
                 ExceptionDetails: error
