@@ -19,8 +19,8 @@ class AMSLogger {
 
     public log(logLevel: LogLevel, telemetryEvent: string, customData: AMSLogData): void {
         const logData = {
-            ...customData,
             Event: telemetryEvent,
+            ...customData
         }
 
         /* istanbul ignore next */

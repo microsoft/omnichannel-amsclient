@@ -9,19 +9,29 @@ import LogLevel from "./LogLevel";
 import OmnichannelChatToken from "./OmnichannelChatToken";
 import PostMessageEventName from "./PostMessageEventName";
 import platform from "./utils/platform";
+import ScenarioMarker from "./telemetry/ScenarioMarker";
 import { sdkVersion } from "./config";
+import { uuidv4 } from "./utils/uuid";
 
 class FramedlessClient {
+    private runtimeId: string;
     private debug: boolean;
     private chatToken!: OmnichannelChatToken;
     private logger?: AMSLogger;
+    private scenarioMarker?: ScenarioMarker;
 
     constructor(logger: AMSLogger | undefined = undefined) {
+        this.runtimeId = uuidv4();
         this.debug = false;
         this.logger = logger;
 
         if (platform.isBrowser()) {
             console.error('FramedMode should be used on Web platform');
+        }
+
+        if (logger) {
+            this.scenarioMarker = new ScenarioMarker(logger);
+            this.scenarioMarker.setRuntimeId(this.runtimeId);
         }
     }
 
@@ -44,22 +54,29 @@ class FramedlessClient {
     }
 
     public async skypeTokenAuth(chatToken: OmnichannelChatToken | null = null): Promise<Response> {
+        this.scenarioMarker?.startScenario(PostMessageEventName.SkypeTokenAuth, {
+            ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+        });
+
         try {
             const response = await API.skypeTokenAuth(chatToken || this.chatToken);
             if (!response.ok) {
-                this.logger?.log(LogLevel.ERROR, PostMessageEventName.SkypeTokenAuth, {
+                this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
                     ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                    AMSClientVersion: sdkVersion,
                     ExceptionDetails: {
                         status: response.status
                     }
                 });
             }
+
+            this.scenarioMarker?.completeScenario(PostMessageEventName.SkypeTokenAuth, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId
+            });
+
             return response;
         } catch (error) {
-            this.logger?.log(LogLevel.ERROR, PostMessageEventName.SkypeTokenAuth, {
-                ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
-                AMSClientVersion: sdkVersion,
+            this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 ExceptionDetails: error
             });
 
@@ -68,13 +85,22 @@ class FramedlessClient {
     }
 
     public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<AMSCreateObjectResponse> {
+        this.scenarioMarker?.startScenario(PostMessageEventName.CreateObject, {
+            ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+        });
+
         try {
             const response = await API.createObject(id, file, chatToken || this.chatToken, supportedImagesMimeTypes);
+
+            this.scenarioMarker?.completeScenario(PostMessageEventName.CreateObject, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                DocumentId: response?.id
+            });
+
             return response;
         } catch (error) {
-            this.logger?.log(LogLevel.ERROR, PostMessageEventName.CreateObject, {
-                ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
-                AMSClientVersion: sdkVersion,
+            this.scenarioMarker?.failScenario(PostMessageEventName.CreateObject, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 ExceptionDetails: error
             });
 
@@ -83,13 +109,24 @@ class FramedlessClient {
     }
 
     public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<FileMetadata> {
+        this.scenarioMarker?.startScenario(PostMessageEventName.UploadDocument, {
+            ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+            DocumentId: documentId
+        });
+
         try {
             const response = await API.uploadDocument(documentId, file, chatToken || this.chatToken, supportedImagesMimeTypes);
+
+            this.scenarioMarker?.completeScenario(PostMessageEventName.UploadDocument, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                DocumentId: documentId
+            });
+
             return response;
         } catch (error) {
-            this.logger?.log(LogLevel.ERROR, PostMessageEventName.UploadDocument, {
-                ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
-                AMSClientVersion: sdkVersion,
+            this.scenarioMarker?.failScenario(PostMessageEventName.UploadDocument, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                DocumentId: documentId,
                 ExceptionDetails: error
             });
 
@@ -98,13 +135,24 @@ class FramedlessClient {
     }
 
     public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<AMSViewStatusResponse> {
+        this.scenarioMarker?.startScenario(PostMessageEventName.GetViewStatus, {
+            ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+            DocumentId: fileMetadata?.id
+        });
+
         try {
             const response = await API.getViewStatus(fileMetadata, chatToken || this.chatToken, supportedImagesMimeTypes);
+
+            this.scenarioMarker?.completeScenario(PostMessageEventName.GetViewStatus, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                DocumentId: fileMetadata?.id
+            });
+
             return response;
         } catch (error) {
-            this.logger?.log(LogLevel.ERROR, PostMessageEventName.GetViewStatus, {
-                ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
-                AMSClientVersion: sdkVersion,
+            this.scenarioMarker?.failScenario(PostMessageEventName.GetViewStatus, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                DocumentId: fileMetadata?.id,
                 ExceptionDetails: error
             });
 
@@ -113,13 +161,24 @@ class FramedlessClient {
     }
 
     public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<Blob> {
+        this.scenarioMarker?.startScenario(PostMessageEventName.GetView, {
+            ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+            DocumentId: fileMetadata?.id
+        });
+
         try {
             const response = await API.getView(fileMetadata, viewLocation, chatToken || this.chatToken, supportedImagesMimeTypes);
+
+            this.scenarioMarker?.completeScenario(PostMessageEventName.GetView, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                DocumentId: fileMetadata?.id
+            });
+
             return response;
         } catch (error) {
-            this.logger?.log(LogLevel.ERROR, PostMessageEventName.GetView, {
-                ChatId: chatToken ? chatToken.chatId : this.chatToken.chatId,
-                AMSClientVersion: sdkVersion,
+            this.scenarioMarker?.failScenario(PostMessageEventName.GetView, {
+                ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                DocumentId: fileMetadata?.id,
                 ExceptionDetails: error
             });
 

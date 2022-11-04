@@ -13,6 +13,7 @@ describe('AMSLogger', () => {
         jest.spyOn(pluggableLogger, 'logClientSdkTelemetryEvent');
 
         const logData = {
+            AMSClientRuntimeId: 'AMSClientRuntimeId',
             ChatId: 'ChatId',
             AMSClientVersion: 'AMSClientVersion'
         }

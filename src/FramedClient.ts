@@ -24,6 +24,7 @@ const version = sdkVersion;
 const iframePrefix = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
 
 class FramedClient {
+    private runtimeId: string;
     private clientId: string;
     private iframeId: string;
     private origin: string;
@@ -35,6 +36,7 @@ class FramedClient {
     private logger?: AMSLogger;
 
     constructor(logger: AMSLogger | undefined = undefined, framedClientConfig: FramedClientConfig | undefined = undefined) {
+        this.runtimeId = uuidv4();
         this.clientId = uuidv4();
         this.origin = window.location.origin;
         this.requestCallbacks = {};
@@ -184,6 +186,7 @@ class FramedClient {
         }
 
         this.targetWindow.postMessage({
+            runtimeId: this.runtimeId,
             clientId: this.clientId,
             requestId,
             eventType,
