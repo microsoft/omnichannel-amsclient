@@ -55,6 +55,7 @@ class FramedlessClient {
 
     public async skypeTokenAuth(chatToken: OmnichannelChatToken | null = null): Promise<Response> {
         this.scenarioMarker?.startScenario(PostMessageEventName.SkypeTokenAuth, {
+            AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
         });
 
@@ -62,6 +63,7 @@ class FramedlessClient {
             const response = await API.skypeTokenAuth(chatToken || this.chatToken);
             if (!response.ok) {
                 this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
+                    AMSClientRuntimeId: this.runtimeId,
                     ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                     ExceptionDetails: {
                         status: response.status
@@ -70,12 +72,14 @@ class FramedlessClient {
             }
 
             this.scenarioMarker?.completeScenario(PostMessageEventName.SkypeTokenAuth, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId
             });
 
             return response;
         } catch (error) {
             this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 ExceptionDetails: error
             });
@@ -86,21 +90,27 @@ class FramedlessClient {
 
     public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<AMSCreateObjectResponse> {
         this.scenarioMarker?.startScenario(PostMessageEventName.CreateObject, {
+            AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+            MimeType: file.type
         });
 
         try {
             const response = await API.createObject(id, file, chatToken || this.chatToken, supportedImagesMimeTypes);
 
             this.scenarioMarker?.completeScenario(PostMessageEventName.CreateObject, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                DocumentId: response?.id
+                DocumentId: response?.id,
+                MimeType: file.type
             });
 
             return response;
         } catch (error) {
             this.scenarioMarker?.failScenario(PostMessageEventName.CreateObject, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                MimeType: file.type,
                 ExceptionDetails: error
             });
 
@@ -110,23 +120,29 @@ class FramedlessClient {
 
     public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<FileMetadata> {
         this.scenarioMarker?.startScenario(PostMessageEventName.UploadDocument, {
+            AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-            DocumentId: documentId
+            DocumentId: documentId,
+            MimeType: file.type
         });
 
         try {
             const response = await API.uploadDocument(documentId, file, chatToken || this.chatToken, supportedImagesMimeTypes);
 
             this.scenarioMarker?.completeScenario(PostMessageEventName.UploadDocument, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                DocumentId: documentId
+                DocumentId: documentId,
+                MimeType: file.type
             });
 
             return response;
         } catch (error) {
             this.scenarioMarker?.failScenario(PostMessageEventName.UploadDocument, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: documentId,
+                MimeType: file.type,
                 ExceptionDetails: error
             });
 
@@ -136,23 +152,29 @@ class FramedlessClient {
 
     public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<AMSViewStatusResponse> {
         this.scenarioMarker?.startScenario(PostMessageEventName.GetViewStatus, {
+            AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-            DocumentId: fileMetadata?.id
+            DocumentId: fileMetadata?.id,
+            MimeType: fileMetadata?.type
         });
 
         try {
             const response = await API.getViewStatus(fileMetadata, chatToken || this.chatToken, supportedImagesMimeTypes);
 
             this.scenarioMarker?.completeScenario(PostMessageEventName.GetViewStatus, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                DocumentId: fileMetadata?.id
+                DocumentId: fileMetadata?.id,
+                MimeType: fileMetadata?.type
             });
 
             return response;
         } catch (error) {
             this.scenarioMarker?.failScenario(PostMessageEventName.GetViewStatus, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: fileMetadata?.id,
+                MimeType: fileMetadata?.type,
                 ExceptionDetails: error
             });
 
@@ -162,23 +184,29 @@ class FramedlessClient {
 
     public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<Blob> {
         this.scenarioMarker?.startScenario(PostMessageEventName.GetView, {
+            AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-            DocumentId: fileMetadata?.id
+            DocumentId: fileMetadata?.id,
+            MimeType: fileMetadata?.type
         });
 
         try {
             const response = await API.getView(fileMetadata, viewLocation, chatToken || this.chatToken, supportedImagesMimeTypes);
 
             this.scenarioMarker?.completeScenario(PostMessageEventName.GetView, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                DocumentId: fileMetadata?.id
+                DocumentId: fileMetadata?.id,
+                MimeType: fileMetadata?.type
             });
 
             return response;
         } catch (error) {
             this.scenarioMarker?.failScenario(PostMessageEventName.GetView, {
+                AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: fileMetadata?.id,
+                MimeType: fileMetadata?.type,
                 ExceptionDetails: error
             });
 
