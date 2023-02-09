@@ -12,6 +12,7 @@ import platform from "./utils/platform";
 import ScenarioMarker from "./telemetry/ScenarioMarker";
 import { sdkVersion } from "./config";
 import { uuidv4 } from "./utils/uuid";
+import extractFileExtension from "./utils/extractFileExtension";
 
 class FramedlessClient {
     private runtimeId: string;
@@ -92,7 +93,8 @@ class FramedlessClient {
         this.scenarioMarker?.startScenario(PostMessageEventName.CreateObject, {
             AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-            MimeType: file.type
+            MimeType: file.type,
+            FileExtension: extractFileExtension(file.name)
         });
 
         try {
@@ -102,7 +104,8 @@ class FramedlessClient {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: response?.id,
-                MimeType: file.type
+                MimeType: file.type,
+                FileExtension: extractFileExtension(file.name)
             });
 
             return response;
@@ -111,6 +114,7 @@ class FramedlessClient {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 MimeType: file.type,
+                FileExtension: extractFileExtension(file.name),
                 ExceptionDetails: error
             });
 
@@ -123,7 +127,8 @@ class FramedlessClient {
             AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
             DocumentId: documentId,
-            MimeType: file.type
+            MimeType: file.type,
+            FileExtension: extractFileExtension(file.name)
         });
 
         try {
@@ -133,7 +138,8 @@ class FramedlessClient {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: documentId,
-                MimeType: file.type
+                MimeType: file.type,
+                FileExtension: extractFileExtension(file.name)
             });
 
             return response;
@@ -143,6 +149,7 @@ class FramedlessClient {
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: documentId,
                 MimeType: file.type,
+                FileExtension: extractFileExtension(file.name),
                 ExceptionDetails: error
             });
 
@@ -155,7 +162,8 @@ class FramedlessClient {
             AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
             DocumentId: fileMetadata?.id,
-            MimeType: fileMetadata?.type
+            MimeType: fileMetadata?.type,
+            FileExtension: extractFileExtension(fileMetadata?.name || '')
         });
 
         try {
@@ -165,7 +173,8 @@ class FramedlessClient {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: fileMetadata?.id,
-                MimeType: fileMetadata?.type
+                MimeType: fileMetadata?.type,
+                FileExtension: extractFileExtension(fileMetadata?.name || '')
             });
 
             return response;
@@ -175,6 +184,7 @@ class FramedlessClient {
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
+                FileExtension: extractFileExtension(fileMetadata?.name || ''),
                 ExceptionDetails: error
             });
 
@@ -187,7 +197,8 @@ class FramedlessClient {
             AMSClientRuntimeId: this.runtimeId,
             ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
             DocumentId: fileMetadata?.id,
-            MimeType: fileMetadata?.type
+            MimeType: fileMetadata?.type,
+            FileExtension: extractFileExtension(fileMetadata?.name || '')
         });
 
         try {
@@ -197,7 +208,8 @@ class FramedlessClient {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: fileMetadata?.id,
-                MimeType: fileMetadata?.type
+                MimeType: fileMetadata?.type,
+                FileExtension: extractFileExtension(fileMetadata?.name || '')
             });
 
             return response;
@@ -207,6 +219,7 @@ class FramedlessClient {
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
+                FileExtension: extractFileExtension(fileMetadata?.name || ''),
                 ExceptionDetails: error
             });
 
