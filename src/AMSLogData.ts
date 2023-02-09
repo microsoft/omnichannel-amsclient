@@ -8,4 +8,5 @@ export default interface AMSLogData {
     Description?: string;
     ExceptionDetails?: Record<string, unknown>;
     AMSClientVersion: string;
+    FileExtension?: string;
 }
