@@ -151,7 +151,7 @@ class IframeCommunicator {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
                         MimeType: data.file.type,
-                        FileExtenion: extractFileExtension(data.file.name),
+                        FileExtension: extractFileExtension(data.file.name),
                         ExceptionDetails: error
                     });
                 }
@@ -192,7 +192,7 @@ class IframeCommunicator {
                         ChatId: data.chatToken.chatId,
                         DocumentId: data.documentId,
                         MimeType: data.file.type,
-                        FileExtenion: extractFileExtension(data.file.name),
+                        FileExtension: extractFileExtension(data.file.name),
                         ExceptionDetails: error
                     });
                 }
