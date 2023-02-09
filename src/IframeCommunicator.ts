@@ -11,7 +11,7 @@ import PostMessageRequestData from "./PostMessageRequestData";
 import LogLevel from "./LogLevel";
 import ScenarioMarker from "./telemetry/ScenarioMarker";
 import AMSLogger from "./AMSLogger";
-
+import extractFileExtension from "./utils/extractFileExtension";
 
 class IframeCommunicator {
     private clientId: string;
@@ -120,7 +120,9 @@ class IframeCommunicator {
             } else if (event.data.eventName === PostMessageEventName.CreateObject) {
                 this.scenarioMarker.startScenario(PostMessageEventName.CreateObject, {
                     AMSClientRuntimeId: data.runtimeId,
-                    ChatId: data.chatToken.chatId
+                    ChatId: data.chatToken.chatId,
+                    MimeType: data.file.type,
+                    FileExtension: extractFileExtension(data.file.name)
                 });
 
                 try {
@@ -136,7 +138,9 @@ class IframeCommunicator {
                     this.scenarioMarker.completeScenario(PostMessageEventName.CreateObject, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        DocumentId: response?.id
+                        DocumentId: response?.id,
+                        MimeType: data.file.type,
+                        FileExtension: extractFileExtension(data.file.name)
                     });
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, postMessageData, PostMessageEventStatus.Success);
@@ -146,6 +150,8 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.CreateObject, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        MimeType: data.file.type,
+                        FileExtension: extractFileExtension(data.file.name),
                         ExceptionDetails: error
                     });
                 }
@@ -153,7 +159,9 @@ class IframeCommunicator {
                 this.scenarioMarker.startScenario(PostMessageEventName.UploadDocument, {
                     AMSClientRuntimeId: data.runtimeId,
                     ChatId: data.chatToken.chatId,
-                    DocumentId: data.documentId
+                    DocumentId: data.documentId,
+                    MimeType: data.file.type,
+                    FileExtension: extractFileExtension(data.file.name)
                 });
 
                 try {
@@ -170,7 +178,9 @@ class IframeCommunicator {
                     this.scenarioMarker.completeScenario(PostMessageEventName.UploadDocument, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        DocumentId: data.documentId
+                        DocumentId: data.documentId,
+                        MimeType: data.file.type,
+                        FileExtension: extractFileExtension(data.file.name)
                     });
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, postMessageData, PostMessageEventStatus.Success);
@@ -181,6 +191,8 @@ class IframeCommunicator {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
                         DocumentId: data.documentId,
+                        MimeType: data.file.type,
+                        FileExtension: extractFileExtension(data.file.name),
                         ExceptionDetails: error
                     });
                 }
@@ -188,7 +200,9 @@ class IframeCommunicator {
                 this.scenarioMarker.startScenario(PostMessageEventName.GetViewStatus, {
                     AMSClientRuntimeId: data.runtimeId,
                     ChatId: data.chatToken.chatId,
-                    DocumentId: data.fileMetadata?.id
+                    DocumentId: data.fileMetadata?.id,
+                    MimeType: data.fileMetadata?.type,
+                    FileExtension: extractFileExtension(data.fileMetadata?.name),
                 });
 
                 try {
@@ -205,7 +219,9 @@ class IframeCommunicator {
                     this.scenarioMarker.completeScenario(PostMessageEventName.GetViewStatus, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        DocumentId: data.fileMetadata?.id
+                        DocumentId: data.fileMetadata?.id,
+                        MimeType: data.fileMetadata?.type,
+                        FileExtension: extractFileExtension(data.fileMetadata?.name),
                     });
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetViewStatus, postMessageData, PostMessageEventStatus.Success);
@@ -216,6 +232,8 @@ class IframeCommunicator {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
                         DocumentId: data.fileMetadata?.id,
+                        MimeType: data.fileMetadata?.type,
+                        FileExtension: extractFileExtension(data.fileMetadata?.name),
                         ExceptionDetails: error
                     });
                 }
@@ -223,7 +241,9 @@ class IframeCommunicator {
                 this.scenarioMarker.startScenario(PostMessageEventName.GetView, {
                     AMSClientRuntimeId: data.runtimeId,
                     ChatId: data.chatToken.chatId,
-                    DocumentId: data.fileMetadata?.id
+                    DocumentId: data.fileMetadata?.id,
+                    MimeType: data.fileMetadata?.type,
+                    FileExtension: extractFileExtension(data.fileMetadata?.name),
                 });
 
                 try {
@@ -240,7 +260,9 @@ class IframeCommunicator {
                     this.scenarioMarker.completeScenario(PostMessageEventName.GetView, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        DocumentId: data.fileMetadata?.id
+                        DocumentId: data.fileMetadata?.id,
+                        MimeType: data.fileMetadata?.type,
+                        FileExtension: extractFileExtension(data.fileMetadata?.name),
                     });
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetView, postMessageData, PostMessageEventStatus.Success);
@@ -251,6 +273,8 @@ class IframeCommunicator {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
                         DocumentId: data.fileMetadata?.id,
+                        MimeType: data.fileMetadata?.type,
+                        FileExtension: extractFileExtension(data.fileMetadata?.name),
                         ExceptionDetails: error
                     });
                 }
