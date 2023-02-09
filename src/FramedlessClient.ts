@@ -5,12 +5,10 @@ import AMSViewStatusResponse from "./AMSViewStatusResponse";
 import API from "./API";
 import FileMetadata from "./FileMetadata";
 import InitConfig from "./InitConfig";
-import LogLevel from "./LogLevel";
 import OmnichannelChatToken from "./OmnichannelChatToken";
 import PostMessageEventName from "./PostMessageEventName";
 import platform from "./utils/platform";
 import ScenarioMarker from "./telemetry/ScenarioMarker";
-import { sdkVersion } from "./config";
 import { uuidv4 } from "./utils/uuid";
 import extractFileExtension from "./utils/extractFileExtension";
 
