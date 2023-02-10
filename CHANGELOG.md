@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.1.4] - 2023-02-09
 ### Added
 - Update `AMSLogData` to include `MimeType` & `FileExtension`
 
