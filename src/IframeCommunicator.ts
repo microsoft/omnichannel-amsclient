@@ -126,7 +126,7 @@ class IframeCommunicator {
                 });
 
                 try {
-                    const response = await API.createObject(data.id, data.file, data.chatToken);
+                    const response = await API.createObject(data.id, data.file, data.chatToken, data.supportedImagesMimeTypes);
                     const postMessageData = {
                         requestId: data.requestId,
                         eventType: PostMessageEventType.Response,
@@ -165,7 +165,7 @@ class IframeCommunicator {
                 });
 
                 try {
-                    const response = await API.uploadDocument(data.documentId, data.file, data.chatToken);
+                    const response = await API.uploadDocument(data.documentId, data.file, data.chatToken, data.supportedImagesMimeTypes);
                     const postMessageData = {
                         requestId: data.requestId,
                         eventType: PostMessageEventType.Response,
@@ -206,7 +206,7 @@ class IframeCommunicator {
                 });
 
                 try {
-                    const response = await API.getViewStatus(data.fileMetadata, data.chatToken);
+                    const response = await API.getViewStatus(data.fileMetadata, data.chatToken, data.supportedImagesMimeTypes);
                     const postMessageData = {
                         requestId: data.requestId,
                         eventType: PostMessageEventType.Response,
@@ -247,7 +247,7 @@ class IframeCommunicator {
                 });
 
                 try {
-                    const response = await API.getView(data.fileMetadata, data.viewLocation, data.chatToken);
+                    const response = await API.getView(data.fileMetadata, data.viewLocation, data.chatToken, data.supportedImagesMimeTypes);
                     const postMessageData = {
                         requestId: data.requestId,
                         eventType: PostMessageEventType.Response,

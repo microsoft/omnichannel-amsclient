@@ -65,6 +65,22 @@ const createDefaultHeaders = (token: string): AMSHeaders => {
     }
 }
 
+const defineSupportedImagesMimeTypes = (supportedImagesMimeTypes?: string[]) => {
+    return (supportedImagesMimeTypes && supportedImagesMimeTypes.length > 0) ?
+        supportedImagesMimeTypes :
+        defaultSupportedImagesMimeTypes;
+}
+
+const defineTypeForOperation = (fileType: string, apiOperation: string, supportedImagesMimeTypes?: string[]) => {
+    const mimeTypes = defineSupportedImagesMimeTypes(supportedImagesMimeTypes);
+
+    if (mimeTypes.includes(fileType.toLowerCase())) {
+        return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateImageType : DocumentTypes.UploadImageType;
+    }
+
+    return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
+}
+
 const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response> => {
     GlobalConfiguration.debug && console.log(`[API][skypeTokenAuth]`);
 
@@ -92,21 +108,6 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
         !GlobalConfiguration.silentError && console.log(error);
         throw new Error('AMSAuth');
     }
-}
-
-const defineSupportedImagesMimeTypes = (supportedImagesMimeTypes?: string[]) => {
-    return (supportedImagesMimeTypes && supportedImagesMimeTypes.length > 0) ?
-        supportedImagesMimeTypes :
-        defaultSupportedImagesMimeTypes;
-}
-
-const defineTypeForOperation = (fileType: string, apiOperation: string, supportedImagesMimeTypes?: string[]) => {
-    const mimeTypes = defineSupportedImagesMimeTypes(supportedImagesMimeTypes);
-
-    if (mimeTypes.includes(fileType.toLowerCase())) {
-        return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateImageType : DocumentTypes.UploadImageType;
-    }
-    return apiOperation === AmsApiOperation.Create ? DocumentTypes.CreateDocumentType : DocumentTypes.UploadDocumentType;
 }
 
 const createObject = async (id: string, file: File, chatToken: OmnichannelChatToken, supportedImagesMimeTypes?: string[]): Promise<AMSCreateObjectResponse> => {
