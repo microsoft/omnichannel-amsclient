@@ -43,12 +43,34 @@ describe('API', () => {
         };
 
         (global as any).fetch = jest.fn(() => Promise.resolve({
+            ok: true,
             json: () => Promise.resolve({})
         }));
 
         await API.createObject(id, file, token);
 
         expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('API.createObject() should throw error when response.ok is false', async () => {
+        const id = 'id';
+        const file =  new File([""], "filename", { type: 'text/html' });
+        const token = {
+            chatId: '',
+            token: ''
+        };
+
+        (global as any).fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            json: () => Promise.resolve({})
+        }));
+
+        try {
+            await API.createObject(id, file, token);
+            fail('createObject should throw');
+        } catch (error) {
+            expect(error).not.toBe(undefined);
+        }
     });
 
     it('API.createObject() should throw an error if API does not succeed', async () => {
@@ -76,11 +98,29 @@ describe('API', () => {
             token: ''
         };
 
-        (global as any).fetch = jest.fn(() => Promise.resolve());
+        (global as any).fetch = jest.fn(() => Promise.resolve({ok: true}));
 
         await API.uploadDocument(documentId, file, token);
 
         expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('API.uploadDocument() should throw error when response.ok is false', async () => {
+        const documentId = 'documentId';
+        const file =  new File([""], "filename", { type: 'text/html' });
+        const token = {
+            chatId: '',
+            token: ''
+        };
+
+        (global as any).fetch = jest.fn(() => Promise.resolve({ok: false}));
+
+        try {
+            await API.uploadDocument(documentId, file, token);
+            fail('uploadDocument should throw');
+        } catch (error) {
+            expect(error).not.toBe(undefined);
+        }
     });
 
     it('API.uploadDocument() should throw an error if API does not succeed', async () => {
