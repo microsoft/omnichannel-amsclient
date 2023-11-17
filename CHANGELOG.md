@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fix `FramedClient` not retrieving custom supported image MIME types
 
+### Added
+- Added error handling for createObject and uploadDocument
+
 ## [0.1.4] - 2023-02-09
 ### Added
 - Update `AMSLogData` to include `MimeType` & `FileExtension`
