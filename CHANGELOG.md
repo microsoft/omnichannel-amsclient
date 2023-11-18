@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.1.5] - 2023-11-17
 ### Fixed
 - Fix `FramedClient` not retrieving custom supported image MIME types
 
