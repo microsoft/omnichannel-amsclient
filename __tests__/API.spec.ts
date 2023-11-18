@@ -98,7 +98,11 @@ describe('API', () => {
             token: ''
         };
 
-        (global as any).fetch = jest.fn(() => Promise.resolve({ok: true}));
+        (global as any).fetch = jest.fn(() => {
+            return new Promise((resolve, reject) => {
+                resolve({ok: true})
+            })
+        });
 
         await API.uploadDocument(documentId, file, token);
 
