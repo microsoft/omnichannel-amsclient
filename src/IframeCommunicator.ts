@@ -145,7 +145,14 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
-                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, {}, PostMessageEventStatus.Failure);
+                    const postMessageData = {
+                        requestId: data.requestId,
+                        eventType: PostMessageEventType.Response,
+                        eventName: data.eventName,
+                        eventStatus: PostMessageEventStatus.Failure
+                    };
+
+                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, postMessageData, PostMessageEventStatus.Failure);
 
                     this.scenarioMarker.failScenario(PostMessageEventName.CreateObject, {
                         AMSClientRuntimeId: data.runtimeId,
@@ -185,7 +192,13 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
-                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, {}, PostMessageEventStatus.Failure);
+                    const postMessageData = {
+                        requestId: data.requestId,
+                        eventType: PostMessageEventType.Response,
+                        eventName: data.eventName,
+                        eventStatus: PostMessageEventStatus.Failure
+                    };
+                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, postMessageData, PostMessageEventStatus.Failure);
 
                     this.scenarioMarker.failScenario(PostMessageEventName.UploadDocument, {
                         AMSClientRuntimeId: data.runtimeId,
