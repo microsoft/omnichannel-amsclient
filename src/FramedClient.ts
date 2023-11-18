@@ -13,6 +13,7 @@ import PostMessageEventName from "./PostMessageEventName";
 import PostMessageEventType from "./PostMessageEventType";
 import PostMessageRequestData from "./PostMessageRequestData";
 import { uuidv4 } from "./utils/uuid";
+import PostMessageEventStatus from "./PostMessageEventStatus";
 
 interface RequestCallback {
     resolve: CallableFunction,
@@ -223,14 +224,28 @@ class FramedClient {
                     delete this.requestCallbacks[data.requestId];
                 }
             } else if (event.data.eventName === PostMessageEventName.CreateObject) {
-                if (data.requestId in this.requestCallbacks) {
-                    this.requestCallbacks[data.requestId].resolve(data.response as AMSCreateObjectResponse);
-                    delete this.requestCallbacks[data.requestId];
+                if (data.eventStatus === PostMessageEventStatus.Success) {
+                    if (data.requestId in this.requestCallbacks) {
+                        this.requestCallbacks[data.requestId].resolve(data.response as AMSCreateObjectResponse);
+                        delete this.requestCallbacks[data.requestId];
+                    }
+                } else {
+                    if (data.requestId in this.requestCallbacks) {
+                        this.requestCallbacks[data.requestId].reject();
+                        delete this.requestCallbacks[data.requestId];
+                    }
                 }
             } else if (event.data.eventName === PostMessageEventName.UploadDocument) {
-                if (data.requestId in this.requestCallbacks) {
-                    this.requestCallbacks[data.requestId].resolve(data.response as FileMetadata);
-                    delete this.requestCallbacks[data.requestId];
+                if (data.eventStatus === PostMessageEventStatus.Success) {
+                    if (data.requestId in this.requestCallbacks) {
+                        this.requestCallbacks[data.requestId].resolve(data.response as FileMetadata);
+                        delete this.requestCallbacks[data.requestId];
+                    }
+                } else {
+                    if (data.requestId in this.requestCallbacks) {
+                        this.requestCallbacks[data.requestId].reject();
+                        delete this.requestCallbacks[data.requestId];
+                    }
                 }
             } else if (event.data.eventName === PostMessageEventName.GetViewStatus) {
                 if (data.requestId in this.requestCallbacks) {

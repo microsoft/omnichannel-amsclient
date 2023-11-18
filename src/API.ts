@@ -139,6 +139,9 @@ const createObject = async (id: string, file: File, chatToken: OmnichannelChatTo
 
     try {
         const response = await fetch(url, request as any);  // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (!response.ok) {
+            throw new Error("AMSCreateObjectFailed");
+        }
         const jsonResponse = await response.json();
         return jsonResponse; // returns document id
     } catch (error) {
@@ -165,7 +168,10 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
         body: (file as any).data ? (file as AMSFileInfo).data : file as File  // eslint-disable-line @typescript-eslint/no-explicit-any
     };
     try {
-        await fetch(url, request as RequestInit);
+        const response = await fetch(url, request as RequestInit);
+        if (!response.ok) {
+            throw new Error("AMSUploadDocumentFailed");
+        }
         const fileMetadata = {
             name: file.name,
             size: file.size,
