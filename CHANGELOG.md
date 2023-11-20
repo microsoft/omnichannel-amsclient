@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ## [0.1.6] - 2023-11-17
-### Fixed
-- Fix `FramedClient` not retrieving custom supported image MIME types
-
 ### Added
 - Added error handling for createObject and uploadDocument
+
+## [0.1.5] - 2023-11-17
+### Fixed
+- Fix `FramedClient` not retrieving custom supported image MIME types
 
 ## [0.1.4] - 2023-02-09
 ### Added
