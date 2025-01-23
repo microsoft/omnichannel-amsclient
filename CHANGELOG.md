@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Add `image/heic` & `image/webp` as part of `supportedImagesMimeTypes`
 
+### Changed
+- Update `FramedClient`'s `targetOrigin` to post cross-origin messages
+
 ## [0.1.6] - 2023-11-17
 ### Added
 - Added error handling for createObject and uploadDocument
