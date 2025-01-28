@@ -193,7 +193,7 @@ class FramedClient {
             eventType,
             eventName,
             ...data
-        }, '*');
+        }, baseUrl);
     }
 
     public async handleEvent(event: MessageEvent): Promise<void> {  // eslint-disable-line @typescript-eslint/no-explicit-any
