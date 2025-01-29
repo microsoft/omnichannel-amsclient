@@ -9,7 +9,6 @@ on:
 
 env:
   CACHE_CONTROL_HEADER: public, max-age=86400, s-maxage=259200, must-revalidate
-  BASE_URL_DEV: https://comms-test.omnichannelengagementhub.com/ams
   BASE_URL_PROD: https://comms.omnichannelengagementhub.com/ams
 
 jobs:
@@ -53,12 +52,6 @@ jobs:
           cp dist/iframe.js ${{ steps.read-package-json.outputs.version }}
           cp dist/iframe.min.js ${{ steps.read-package-json.outputs.version }}
           cp dist/iframe.html ${{ steps.read-package-json.outputs.version }}
-      - name: Publish CDN package to versioned blob (dev)
-        run: |
-          az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGDEV }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/${{ steps.read-package-json.outputs.version }}" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
-      - name: Publish CDN package to latest blob (dev)
-        run: |
-          az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGDEV }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
       - name: Publish CDN package to versioned blob (prod)
         run: |
           az storage blob upload-batch --connection-string "${{ secrets.BLOBCONNECTIONSTRINGPROD }}" --source "${{ steps.read-package-json.outputs.version }}" --destination "ams/${{ steps.read-package-json.outputs.version }}" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}"
