@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.1.7] - 2025-01-30
 ### Added
 - Add `image/heic` & `image/webp` as part of `supportedImagesMimeTypes`
 
