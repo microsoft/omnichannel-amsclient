@@ -63,7 +63,7 @@ class IframeCommunicator {
             eventName,
             eventStatus,
             ...data
-        }, '*');
+        }, document.referrer);
     }
 
     public async handleEvent(event: MessageEvent<any>): Promise<void> {  // eslint-disable-line @typescript-eslint/no-explicit-any
