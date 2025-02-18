@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.8] - 2025-02-18
 ### Changed
 - Update `IframeCommunicator`'s `targetOrigin` to post cross-origin messages
 
