@@ -46,8 +46,10 @@ class FramedlessClient {
     public async initialize(initConfig: InitConfig): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedlessClient][initialize]`);
+
         this.chatToken = initConfig.chatToken;
-        this.skypeTokenAuth();
+
+        await this.skypeTokenAuth();
     }
 
     public async skypeTokenAuth(chatToken: OmnichannelChatToken | null = null): Promise<Response> {
