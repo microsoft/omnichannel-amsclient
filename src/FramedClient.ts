@@ -41,7 +41,7 @@ class FramedClient {
         this.clientId = uuidv4();
         this.origin = window.location.origin;
         this.requestCallbacks = {};
-        this.debug = true;
+        this.debug = false;
         this.iframeLoaded = false;
         this.logger = logger;
         this.iframeId = iframePrefix;
@@ -84,7 +84,7 @@ class FramedClient {
         this.debug && console.time('ams:initialize');
         this.chatToken = initConfig.chatToken;
 
-        await this.skypeTokenAuth();
+        this.skypeTokenAuth();
         this.debug && console.timeEnd('ams:initialize');
     }
 
@@ -303,13 +303,14 @@ class FramedClient {
             if (this.iframeLoaded) {
                 resolve();
                 return;
-            } else {
-                const currentIframe = document.getElementById(this.iframeId);
-                if (currentIframe) {
-                    this.iframeLoaded = true;
-                    resolve();
-                    return;
-                }
+            }
+
+            // if the iframe is already loaded, we just resolve the promise
+            const currentIframe = document.getElementById(this.iframeId);
+            if (currentIframe) {
+                this.iframeLoaded = true;
+                resolve();
+                return;
             }
 
             // at this point, is assured that the iframe is not loaded yet, so we can proceed to load it
