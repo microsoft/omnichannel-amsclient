@@ -21,12 +21,12 @@ jobs:
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           az
       - name: Checking out for ${{ github.ref }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 12.X
+          node-version: 20.x
 
       - name: Update package version
         run: npx version-from-git --no-git-tag-version
