@@ -74,11 +74,9 @@ class FramedClient {
         }
 
         // in case the load is called multiple times, we just dont load the iframe again
-        console.time('ams-setup:loadIframe');
         if(this.loadIframeState === LoadIframeState.NotLoaded) {
             await this.loadIframe();
         }
-        console.timeEnd('ams-setup:loadIframe');
 
         this.debug && console.timeEnd('ams:setup');
 
@@ -316,28 +314,21 @@ class FramedClient {
             }
 
             // if the iframe is already loaded, we just resolve the promise
-            console.time('ams:loadIframe:checkIframe');
             const currentIframe = document.getElementById(this.iframeId);
             if (currentIframe) {
                 this.loadIframeState = LoadIframeState.Loaded;
                 resolve();
                 return;
             }
-            console.timeEnd('ams:loadIframe:checkIframe');
-
             // at this point, is assured that the iframe is not loaded yet, so we can proceed to load it
             /* istanbul ignore next */            
-            console.time('ams:loadIframe:createIframe');
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
             iframeElement.id = this.iframeId;
             iframeElement.src = `${baseUrl}/${version}/iframe.html?clientId=${this.clientId}&debug=${this.debug}&telemetry=true`;
+            //controlling iframe state to prevent clashing calls
             this.loadIframeState = LoadIframeState.Loading;
-            console.timeEnd('ams:loadIframe:createIframe');
 
-            console.time('ams:loadIframe:appendIframe');
             iframeElement.addEventListener('load', () => {
-                console.timeEnd('ams:loadIframe:appendIframe');
-                console.log("time to resolve :", Date.now());
                 /* istanbul ignore next */
                 this.debug && console.log('iframe loaded!');
                 this.loadIframeState = LoadIframeState.Loaded;
@@ -348,10 +339,7 @@ class FramedClient {
                 this.loadIframeState = LoadIframeState.Failed;
                 reject();
             });
-
-            console.time('ams:loadIframe:appendIframe2');
             document.head.append(iframeElement);
-            console.timeEnd('ams:loadIframe:appendIframe2');
             this.debug && console.timeEnd('ams:loadIframe');
         });
     }
