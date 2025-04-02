@@ -2,10 +2,11 @@
  * @jest-environment jsdom
  */
 
-import FramedClient from "../src/FramedClient";
+import FramedClient, { LoadIframeState } from "../src/FramedClient";
 import PostMessageEventName from "../src/PostMessageEventName";
 import PostMessageEventType from "../src/PostMessageEventType";
 import platform from "../src/utils/platform";
+
 
 describe('FramedClient', () => {
 
@@ -29,7 +30,7 @@ describe('FramedClient', () => {
         const client = new FramedClient();
 
         (client as any).loadIframe = jest.fn();
-        (client as any).iframeLoaded = true;
+        (client as any).loadIframeState = LoadIframeState.Loaded;
 
         try {
             await client.setup();
@@ -42,7 +43,7 @@ describe('FramedClient', () => {
         const client = new FramedClient();
 
         (client as any).loadIframe = jest.fn();
-        (client as any).iframeLoaded = true;
+        (client as any).loadIframeState = LoadIframeState.Loaded;
 
         const token = {
             chatId: '',
@@ -96,10 +97,10 @@ describe('FramedClient', () => {
     it('FramedClient.dispose() should clean up', async () => {
         const client = new FramedClient();
 
-        (client as any).iframeLoaded = true;
+        (client as any).loadIframeState = LoadIframeState.Loaded;
 
         client.dispose();
 
-        expect((client as any).iframeLoaded).toBe(false);
+        expect((client as any).loadIframeState).toBe(LoadIframeState.NotLoaded);
     });
 });

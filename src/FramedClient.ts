@@ -15,7 +15,7 @@ import PostMessageRequestData from "./PostMessageRequestData";
 import { uuidv4 } from "./utils/uuid";
 import PostMessageEventStatus from "./PostMessageEventStatus";
 
-enum LoadIframeState {
+export enum LoadIframeState {
     Loading,
     Loaded,
     Failed,
@@ -243,7 +243,7 @@ class FramedClient {
 
         // Finds target window to post message back
         if (event.source) {
-            this.targetWindow = event.source as Window;
+             this.targetWindow = event.source as Window;
         }
 
         if (event.data.eventType === PostMessageEventType.Response) {
@@ -299,7 +299,7 @@ class FramedClient {
     public dispose(): void {
         document.getElementById(this.iframeId)?.remove();
         this.requestCallbacks = {};
-        this.loadIframeState === LoadIframeState.NotLoaded;
+        this.loadIframeState = LoadIframeState.NotLoaded;
     }
 
     private async loadIframe(): Promise<void> {
