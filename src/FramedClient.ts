@@ -1,19 +1,20 @@
+import { baseUrl, sdkVersion } from "./config";
+
 import AMSCreateObjectResponse from "./AMSCreateObjectResponse";
 import AMSFileInfo from "./AMSFileInfo";
 import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
-import { baseUrl, sdkVersion } from "./config";
 import FileMetadata from "./FileMetadata";
 import FramedClientConfig from "./FramedClientConfig";
 import GlobalConfiguration from "./GlobalConfiguration";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
-import platform from "./utils/platform";
 import PostMessageEventName from "./PostMessageEventName";
+import PostMessageEventStatus from "./PostMessageEventStatus";
 import PostMessageEventType from "./PostMessageEventType";
 import PostMessageRequestData from "./PostMessageRequestData";
+import platform from "./utils/platform";
 import { uuidv4 } from "./utils/uuid";
-import PostMessageEventStatus from "./PostMessageEventStatus";
 
 export enum LoadIframeState {
     Loading,
@@ -61,7 +62,7 @@ class FramedClient {
     /* istanbul ignore next */
     public setDebug(flag: boolean): void {
         this.debug = flag;
-        this.debug = true;
+
     }
 
     public async setup(): Promise<void> {
