@@ -48,7 +48,7 @@ class FramedClient {
         this.clientId = uuidv4();
         this.origin = window.location.origin;
         this.requestCallbacks = {};
-        this.debug = true;
+        this.debug = false;
         this.loadIframeState = LoadIframeState.NotLoaded;
         this.logger = logger;
         this.iframeId = iframePrefix;
