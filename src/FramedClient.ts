@@ -1,19 +1,27 @@
+import { baseUrl, sdkVersion } from "./config";
+
 import AMSCreateObjectResponse from "./AMSCreateObjectResponse";
 import AMSFileInfo from "./AMSFileInfo";
 import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
-import { baseUrl, sdkVersion } from "./config";
 import FileMetadata from "./FileMetadata";
 import FramedClientConfig from "./FramedClientConfig";
 import GlobalConfiguration from "./GlobalConfiguration";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
-import platform from "./utils/platform";
 import PostMessageEventName from "./PostMessageEventName";
+import PostMessageEventStatus from "./PostMessageEventStatus";
 import PostMessageEventType from "./PostMessageEventType";
 import PostMessageRequestData from "./PostMessageRequestData";
+import platform from "./utils/platform";
 import { uuidv4 } from "./utils/uuid";
-import PostMessageEventStatus from "./PostMessageEventStatus";
+
+export enum LoadIframeState {
+    Loading,
+    Loaded,
+    Failed,
+    NotLoaded
+}
 
 interface RequestCallback {
     resolve: CallableFunction,
@@ -32,9 +40,9 @@ class FramedClient {
     private targetWindow!: Window; // Reference of window object that sent the message
     private requestCallbacks: Record<string, RequestCallback>;  // eslint-disable-line @typescript-eslint/no-explicit-any
     private debug: boolean;
-    private iframeLoaded: boolean;
     private chatToken!: OmnichannelChatToken;
     private logger?: AMSLogger;
+    private loadIframeState: LoadIframeState;
 
     constructor(logger: AMSLogger | undefined = undefined, framedClientConfig: FramedClientConfig | undefined = undefined) {
         this.runtimeId = uuidv4();
@@ -42,7 +50,7 @@ class FramedClient {
         this.origin = window.location.origin;
         this.requestCallbacks = {};
         this.debug = false;
-        this.iframeLoaded = false;
+        this.loadIframeState = LoadIframeState.NotLoaded;
         this.logger = logger;
         this.iframeId = iframePrefix;
 
@@ -54,21 +62,27 @@ class FramedClient {
     /* istanbul ignore next */
     public setDebug(flag: boolean): void {
         this.debug = flag;
+
     }
 
     public async setup(): Promise<void> {
-        /* istanbul ignore next */
-        this.debug && console.log(`[FramedClient][initialize]`);
-
+        this.debug && console.log(`[FramedClient][setup]`);
+        this.debug && console.time('ams:setup');
         this.onMessageEvent((event: MessageEvent) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
 
         if (!platform.isBrowser()) {
             throw new Error('FramedMode was used in non-Web platform');
         }
 
-        await this.loadIframe();
+        // in case the load is called multiple times, we just dont load the iframe again
+        if(this.loadIframeState === LoadIframeState.NotLoaded) {
+            await this.loadIframe();
+        }
 
-        if (!this.iframeLoaded) {
+        this.debug && console.timeEnd('ams:setup');
+
+        /// since the promisse is hold and not released until there is a result, we are certain of the state
+        if (this.loadIframeState === LoadIframeState.Failed) {
             !GlobalConfiguration.silentError && console.error('iframe not loaded');
         }
     }
@@ -76,21 +90,25 @@ class FramedClient {
     public async initialize(initConfig: InitConfig): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][initialize]`);
-
+        this.debug && console.time('ams:initialize');
         this.chatToken = initConfig.chatToken;
 
-        await this.skypeTokenAuth();
+        this.skypeTokenAuth();
+        this.debug && console.timeEnd('ams:initialize');
     }
 
     public async skypeTokenAuth(chatToken: OmnichannelChatToken | null = null): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][skypeAuth]`);
+        this.debug && console.time('ams:skypeTokenAuth');
         const data = {
             chatToken: chatToken || this.chatToken
         };
 
-        await this.loadIframe();
-
+        if(this.loadIframeState === LoadIframeState.NotLoaded) {
+            await this.loadIframe();
+        }
+        this.debug && console.timeEnd('ams:skypeTokenAuth');
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.SkypeTokenAuth, data, resolve, reject);
         })
@@ -99,6 +117,7 @@ class FramedClient {
     public async createObject(id: string, file: File, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][createObject]`);
+        this.debug && console.time('ams:createObject');
         const data = {
             id,
             file,
@@ -106,8 +125,10 @@ class FramedClient {
             supportedImagesMimeTypes
         };
 
-        await this.loadIframe();
-
+        if(this.loadIframeState === LoadIframeState.NotLoaded) {
+            await this.loadIframe();
+        }
+        this.debug && console.timeEnd('ams:createObject');
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.CreateObject, data, resolve, reject);
         })
@@ -116,6 +137,7 @@ class FramedClient {
     public async uploadDocument(documentId: string, file: File | AMSFileInfo, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][uploadDocument]`);
+        this.debug && console.time('ams:uploadDocument');
         const data = {
             documentId,
             file,
@@ -123,28 +145,37 @@ class FramedClient {
             supportedImagesMimeTypes
         };
 
-        await this.loadIframe();
+        if(this.loadIframeState === LoadIframeState.NotLoaded) {
+            await this.loadIframe();
+        }
 
+        this.debug && console.timeEnd('ams:uploadDocument');
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.UploadDocument, data, resolve, reject);
         })
     }
 
     public async getViewStatus(fileMetadata: FileMetadata, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
+        this.debug && console.log(`[FramedClient][getViewStatus]`);
+        this.debug && console.time('ams:getViewStatus');
         const data = {
             fileMetadata,
             chatToken: chatToken || this.chatToken,
             supportedImagesMimeTypes
         }
 
-        await this.loadIframe();
-
+        if(this.loadIframeState === LoadIframeState.NotLoaded) {
+            await this.loadIframe();
+        }
+        this.debug && console.timeEnd('ams:getViewStatus');
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.GetViewStatus, data, resolve, reject);
         })
     }
 
     public async getView(fileMetadata: FileMetadata, viewLocation: string, chatToken: OmnichannelChatToken | null = null, supportedImagesMimeTypes: string[] = []): Promise<void> {
+        this.debug && console.log(`[FramedClient][getView]`);
+        this.debug && console.time('ams:getView');
         const data = {
             fileMetadata,
             viewLocation,
@@ -152,8 +183,11 @@ class FramedClient {
             supportedImagesMimeTypes
         }
 
-        await this.loadIframe();
+        if(this.loadIframeState === LoadIframeState.NotLoaded) {
+            await this.loadIframe();
+        }
 
+        this.debug && console.timeEnd('ams:getView');
         return new Promise((resolve, reject) => {
             this.postMessage(PostMessageEventType.Request, PostMessageEventName.GetView, data, resolve, reject);
         })
@@ -210,7 +244,7 @@ class FramedClient {
 
         // Finds target window to post message back
         if (event.source) {
-            this.targetWindow = event.source as Window;
+             this.targetWindow = event.source as Window;
         }
 
         if (event.data.eventType === PostMessageEventType.Response) {
@@ -266,35 +300,48 @@ class FramedClient {
     public dispose(): void {
         document.getElementById(this.iframeId)?.remove();
         this.requestCallbacks = {};
-        this.iframeLoaded = false;
+        this.loadIframeState = LoadIframeState.NotLoaded;
     }
 
     private async loadIframe(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const iframeElements = Array.from(document.getElementsByTagName('iframe'));
-            const foundIframeElement = iframeElements.filter(iframeElement => iframeElement.id == this.iframeId);
 
-            // Avoid duplicate load
-            if (foundIframeElement.length) {
-                return resolve();
+        return new Promise((resolve, reject) => {
+            this.debug && console.log(`[FramedClient][loadIframe]`);
+            this.debug && console.time('ams:loadIframe');
+            // next block is to check if the iframe is already loaded and preveent double loading in an efortless way
+            if(this.loadIframeState === LoadIframeState.Loading || this.loadIframeState === LoadIframeState.Loaded) {
+                resolve();
+                return;
             }
 
+            // if the iframe is already loaded, we just resolve the promise
+            const currentIframe = document.getElementById(this.iframeId);
+            if (currentIframe) {
+                this.loadIframeState = LoadIframeState.Loaded;
+                resolve();
+                return;
+            }
+            // at this point, is assured that the iframe is not loaded yet, so we can proceed to load it
+            /* istanbul ignore next */            
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
             iframeElement.id = this.iframeId;
             iframeElement.src = `${baseUrl}/${version}/iframe.html?clientId=${this.clientId}&debug=${this.debug}&telemetry=true`;
+            //controlling iframe state to prevent clashing calls
+            this.loadIframeState = LoadIframeState.Loading;
 
             iframeElement.addEventListener('load', () => {
                 /* istanbul ignore next */
                 this.debug && console.log('iframe loaded!');
-                this.iframeLoaded = true;
+                this.loadIframeState = LoadIframeState.Loaded;
                 resolve();
             });
 
             iframeElement.addEventListener('error', () => {
+                this.loadIframeState = LoadIframeState.Failed;
                 reject();
             });
-
             document.head.append(iframeElement);
+            this.debug && console.timeEnd('ams:loadIframe');
         });
     }
 }
