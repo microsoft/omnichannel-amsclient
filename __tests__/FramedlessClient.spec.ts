@@ -21,7 +21,7 @@ describe('FramedlessClient', () => {
 
         jest.spyOn(client, 'skypeTokenAuth').mockResolvedValue(Promise.resolve({}) as never);
 
-        await client.initialize({chatToken: token});
+        await client.initialize({ chatToken: token });
 
         expect(client.skypeTokenAuth).toHaveBeenCalledTimes(1);
     });
@@ -44,7 +44,7 @@ describe('FramedlessClient', () => {
             chatId: '',
             token: ''
         };
-        
+
         try {
             jest.spyOn(API, 'skypeTokenAuth').mockRejectedValue(new Error("error"));
             await client.skypeTokenAuth(token);
@@ -57,7 +57,7 @@ describe('FramedlessClient', () => {
     it('FramedlessClient.createObject() should call API.createObject()', async () => {
         const client = new FramedlessClient();
         const id = 'id';
-        const file =  new File([""], "filename", { type: 'text/html' });
+        const file = new File([""], "filename", { type: 'text/html' });
         const token = {
             chatId: '',
             token: ''
@@ -74,7 +74,7 @@ describe('FramedlessClient', () => {
     it('FramedlessClient.createObject() should throw an error if API call does not succeed', async () => {
         const client = new FramedlessClient();
         const id = 'id';
-        const file =  new File([""], "filename", { type: 'text/html' });
+        const file = new File([""], "filename", { type: 'text/html' });
         const token = {
             chatId: '',
             token: ''
@@ -93,7 +93,7 @@ describe('FramedlessClient', () => {
     it('FramedlessClient.createObject() should throw an error if API call does not succeed', async () => {
         const client = new FramedlessClient();
         const id = 'id';
-        const file =  new File([""], "filename", { type: 'text/html' });
+        const file = new File([""], "filename", { type: 'text/html' });
         const token = {
             chatId: '',
             token: ''
@@ -112,7 +112,7 @@ describe('FramedlessClient', () => {
     it('FramedlessClient.uploadDocument() should call API.uploadDocument()', async () => {
         const client = new FramedlessClient();
         const documentId = 'documentId';
-        const file =  new File([""], "filename", { type: 'text/html' });
+        const file = new File([""], "filename", { type: 'text/html' });
         const token = {
             chatId: '',
             token: ''
@@ -128,7 +128,7 @@ describe('FramedlessClient', () => {
     it('FramedlessClient.uploadDocument() should throw an error if API call does not succeed', async () => {
         const client = new FramedlessClient();
         const documentId = 'documentId';
-        const file =  new File([""], "filename", { type: 'text/html' });
+        const file = new File([""], "filename", { type: 'text/html' });
         const token = {
             chatId: '',
             token: ''
@@ -270,7 +270,4 @@ describe('FramedlessClient', () => {
             expect(error).not.toBe(undefined);
         }
     });
-    
-
-
 });
