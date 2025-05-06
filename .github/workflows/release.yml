@@ -18,8 +18,10 @@ env:
 
 jobs:
   build:
+    environment: Production
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
-
     steps:
       - name: Install az
         run: |
@@ -27,7 +29,6 @@ jobs:
           az
       - name: Checking out for ${{ github.ref }}
         uses: actions/checkout@v4
-
       - name: Azure Login
         uses: azure/login@v2
         with:
