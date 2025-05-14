@@ -63,7 +63,7 @@ jobs:
           az storage blob upload-batch --overwrite --account-name "${{ env.AZURE_STORAGE_ACCOUNT }}" --source "{{ steps.read-package-json.outputs.version }}" --destination "${{ env.AZURE_STORAGE_CONTAINER }}/${{ steps.read-package-json.outputs.version }}" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}" --sas-token "${{ env.AZURE_STORAGE_SAS_TOKEN }}"
       - name: Publish CDN package to latest blob (prod)
         run: |
-          az storage blob upload-batch --account-name "${{ env.AZURE_STORAGE_ACCOUNT }}" --source "{{ steps.read-package-json.outputs.version }}" --destination "${{ env.AZURE_STORAGE_CONTAINER }}/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}" --sas-token "${{ env.AZURE_STORAGE_SAS_TOKEN }}"
+          az storage blob upload-batch --overwrite --account-name "${{ env.AZURE_STORAGE_ACCOUNT }}" --source "{{ steps.read-package-json.outputs.version }}" --destination "${{ env.AZURE_STORAGE_CONTAINER }}/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}" --sas-token "${{ env.AZURE_STORAGE_SAS_TOKEN }}"
       - name: Npm packaging
         run: npm pack
 
