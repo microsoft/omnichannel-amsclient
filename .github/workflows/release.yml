@@ -6,6 +6,7 @@ on:
       - main
     tags:
       - 'v*'
+  workflow_dispatch:
 
 env:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -13,14 +14,13 @@ env:
   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
   AZURE_STORAGE_CONTAINER: ${{ secrets.AZURE_STORAGE_CONTAINER }}
+  AZURE_STORAGE_SAS_TOKEN: ${{ secrets.AZURE_STORAGE_SAS_TOKEN }}
   CACHE_CONTROL_HEADER: public, max-age=86400, s-maxage=259200, must-revalidate
   BASE_URL_PROD: https://comms.omnichannelengagementhub.com/ams
 
 jobs:
   build:
     environment: Production
-    permissions:
-      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Install az
@@ -29,13 +29,6 @@ jobs:
           az
       - name: Checking out for ${{ github.ref }}
         uses: actions/checkout@v4
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ env.AZURE_CLIENT_ID }}
-          tenant-id: ${{ env.AZURE_TENANT_ID }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-          enable-AzPSSession: true
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -67,10 +60,10 @@ jobs:
           cp dist/iframe.html ${{ steps.read-package-json.outputs.version }}
       - name: Publish CDN package to versioned blob (prod)
         run: |
-          az storage blob upload-batch --account-name "${{ env.AZURE_STORAGE_ACCOUNT }}" --source "{{ steps.read-package-json.outputs.version }}" --destination "${{ env.AZURE_STORAGE_CONTAINER }}/${{ steps.read-package-json.outputs.version }}" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}" --auth login
+          az storage blob upload-batch --overwrite --account-name "${{ env.AZURE_STORAGE_ACCOUNT }}" --source "{{ steps.read-package-json.outputs.version }}" --destination "${{ env.AZURE_STORAGE_CONTAINER }}/${{ steps.read-package-json.outputs.version }}" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}" --sas-token "${{ env.AZURE_STORAGE_SAS_TOKEN }}"
       - name: Publish CDN package to latest blob (prod)
         run: |
-          az storage blob upload-batch --account-name "${{ env.AZURE_STORAGE_ACCOUNT }}" --source "{{ steps.read-package-json.outputs.version }}" --destination "ams/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}" --auth login
+          az storage blob upload-batch --overwrite --account-name "${{ env.AZURE_STORAGE_ACCOUNT }}" --source "{{ steps.read-package-json.outputs.version }}" --destination "${{ env.AZURE_STORAGE_CONTAINER }}/latest" --content-cache-control "${{ env.CACHE_CONTROL_HEADER }}" --sas-token "${{ env.AZURE_STORAGE_SAS_TOKEN }}"
       - name: Npm packaging
         run: npm pack
 
