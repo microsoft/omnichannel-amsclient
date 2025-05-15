@@ -9,7 +9,8 @@ interface AMSConfig {
     debug?: boolean,
     logger?: PluggableLogger,
     silentError?: boolean,
-    multiClient?: boolean
+    multiClient?: boolean,
+    baseUrl?: string
 }
 
 const createAMSClient = async (config: AMSConfig): Promise<FramedClient | FramedlessClient> => {
@@ -19,7 +20,8 @@ const createAMSClient = async (config: AMSConfig): Promise<FramedClient | Framed
 
     const logger = new AMSLogger(config.logger);
     const framedClientConfig = {
-        multiClient: config.multiClient || false
+        multiClient: config.multiClient || false,
+        baseUrl: config.baseUrl || "",
     };
 
     const client = config.framedMode? new FramedClient(logger, framedClientConfig): new FramedlessClient(logger);
