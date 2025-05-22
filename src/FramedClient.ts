@@ -1,5 +1,4 @@
 import { baseUrl, sdkVersion } from "./config";
-
 import AMSCreateObjectResponse from "./AMSCreateObjectResponse";
 import AMSFileInfo from "./AMSFileInfo";
 import AMSLogger from "./AMSLogger";
@@ -34,6 +33,7 @@ const iframePrefix = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
 
 class FramedClient {
     private runtimeId: string;
+    private baseUrl: string;
     private clientId: string;
     private iframeId: string;
     private origin: string;
@@ -46,6 +46,7 @@ class FramedClient {
 
     constructor(logger: AMSLogger | undefined = undefined, framedClientConfig: FramedClientConfig | undefined = undefined) {
         this.runtimeId = uuidv4();
+        this.baseUrl = baseUrl;
         this.clientId = uuidv4();
         this.origin = window.location.origin;
         this.requestCallbacks = {};
@@ -53,6 +54,10 @@ class FramedClient {
         this.loadIframeState = LoadIframeState.NotLoaded;
         this.logger = logger;
         this.iframeId = iframePrefix;
+
+        if (framedClientConfig && framedClientConfig.baseUrl) {
+            this.baseUrl = framedClientConfig.baseUrl;
+        }
 
         if (framedClientConfig && framedClientConfig.multiClient) {
             this.iframeId = this.clientId;
@@ -227,11 +232,11 @@ class FramedClient {
             eventType,
             eventName,
             ...data
-        }, baseUrl);
+        }, this.baseUrl);
     }
 
     public async handleEvent(event: MessageEvent): Promise<void> {  // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (event.origin !== this.origin && !baseUrl.includes(event.origin)) {
+        if (event.origin !== this.origin && !this.baseUrl.includes(event.origin)) {
             return;
         }
 
@@ -325,7 +330,7 @@ class FramedClient {
             /* istanbul ignore next */            
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
             iframeElement.id = this.iframeId;
-            iframeElement.src = `${baseUrl}/${version}/iframe.html?clientId=${this.clientId}&debug=${this.debug}&telemetry=true`;
+            iframeElement.src = `${this.baseUrl}/${version}/iframe.html?clientId=${this.clientId}&debug=${this.debug}&telemetry=true`;
             //controlling iframe state to prevent clashing calls
             this.loadIframeState = LoadIframeState.Loading;
 

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add ability for `FramedClient` to pass custom `baseUrl`
+
 ### Changes
 
 - Remove multiple calls to iframe load, and enhancement for iframe load logic.
