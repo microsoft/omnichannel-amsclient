@@ -5,6 +5,7 @@ import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
 import FileMetadata from "./FileMetadata";
 import FramedClientConfig from "./FramedClientConfig";
+import FramedClientEventName from "./FramedClientEventName";
 import GlobalConfiguration from "./GlobalConfiguration";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
@@ -13,6 +14,7 @@ import PostMessageEventStatus from "./PostMessageEventStatus";
 import PostMessageEventType from "./PostMessageEventType";
 import PostMessageRequestData from "./PostMessageRequestData";
 import platform from "./utils/platform";
+import ScenarioMarker from "./telemetry/ScenarioMarker";
 import { uuidv4 } from "./utils/uuid";
 
 export enum LoadIframeState {
@@ -43,6 +45,7 @@ class FramedClient {
     private chatToken!: OmnichannelChatToken;
     private logger?: AMSLogger;
     private loadIframeState: LoadIframeState;
+    private scenarioMarker?: ScenarioMarker;
 
     constructor(logger: AMSLogger | undefined = undefined, framedClientConfig: FramedClientConfig | undefined = undefined) {
         this.runtimeId = uuidv4();
@@ -54,6 +57,10 @@ class FramedClient {
         this.loadIframeState = LoadIframeState.NotLoaded;
         this.logger = logger;
         this.iframeId = iframePrefix;
+
+        if (this.logger) {
+            this.scenarioMarker = new ScenarioMarker(this.logger);
+        }
 
         if (framedClientConfig && framedClientConfig.baseUrl) {
             this.baseUrl = framedClientConfig.baseUrl;
@@ -71,6 +78,10 @@ class FramedClient {
     }
 
     public async setup(): Promise<void> {
+        this.scenarioMarker?.startScenario(FramedClientEventName.Setup, {
+            AMSClientRuntimeId: this.runtimeId
+        });
+
         this.debug && console.log(`[FramedClient][setup]`);
         this.debug && console.time('ams:setup');
         this.onMessageEvent((event: MessageEvent) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -84,11 +95,23 @@ class FramedClient {
             await this.loadIframe();
         }
 
+        this.scenarioMarker?.completeScenario(FramedClientEventName.Setup, {
+            AMSClientRuntimeId: this.runtimeId
+        });
+
         this.debug && console.timeEnd('ams:setup');
 
         /// since the promisse is hold and not released until there is a result, we are certain of the state
         if (this.loadIframeState === LoadIframeState.Failed) {
             !GlobalConfiguration.silentError && console.error('iframe not loaded');
+            const exceptionDetails = {
+                Reason: 'LoadIframeFailed',
+                Message: 'iframe not loaded'
+            };
+            this.scenarioMarker?.failScenario(FramedClientEventName.Setup, {
+                AMSClientRuntimeId: this.runtimeId,
+                ExceptionDetails: JSON.stringify(exceptionDetails)
+            });
         }
     }
 
