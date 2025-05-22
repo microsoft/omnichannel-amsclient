@@ -5,6 +5,7 @@ import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
 import FileMetadata from "./FileMetadata";
 import FramedClientConfig from "./FramedClientConfig";
+import FramedClientEventName from "./FramedClientEventName";
 import GlobalConfiguration from "./GlobalConfiguration";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
@@ -13,6 +14,7 @@ import PostMessageEventStatus from "./PostMessageEventStatus";
 import PostMessageEventType from "./PostMessageEventType";
 import PostMessageRequestData from "./PostMessageRequestData";
 import platform from "./utils/platform";
+import ScenarioMarker from "./telemetry/ScenarioMarker";
 import { uuidv4 } from "./utils/uuid";
 
 export enum LoadIframeState {
@@ -43,6 +45,7 @@ class FramedClient {
     private chatToken!: OmnichannelChatToken;
     private logger?: AMSLogger;
     private loadIframeState: LoadIframeState;
+    private scenarioMarker?: ScenarioMarker;
 
     constructor(logger: AMSLogger | undefined = undefined, framedClientConfig: FramedClientConfig | undefined = undefined) {
         this.runtimeId = uuidv4();
@@ -54,6 +57,10 @@ class FramedClient {
         this.loadIframeState = LoadIframeState.NotLoaded;
         this.logger = logger;
         this.iframeId = iframePrefix;
+
+        if (this.logger) {
+            this.scenarioMarker = new ScenarioMarker(this.logger);
+        }
 
         if (framedClientConfig && framedClientConfig.baseUrl) {
             this.baseUrl = framedClientConfig.baseUrl;
@@ -71,6 +78,10 @@ class FramedClient {
     }
 
     public async setup(): Promise<void> {
+        this.scenarioMarker?.startScenario(FramedClientEventName.Setup, {
+            AMSClientRuntimeId: this.runtimeId
+        });
+
         this.debug && console.log(`[FramedClient][setup]`);
         this.debug && console.time('ams:setup');
         this.onMessageEvent((event: MessageEvent) => this.handleEvent(event));  // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -84,22 +95,44 @@ class FramedClient {
             await this.loadIframe();
         }
 
+        this.scenarioMarker?.completeScenario(FramedClientEventName.Setup, {
+            AMSClientRuntimeId: this.runtimeId
+        });
+
         this.debug && console.timeEnd('ams:setup');
 
         /// since the promisse is hold and not released until there is a result, we are certain of the state
         if (this.loadIframeState === LoadIframeState.Failed) {
             !GlobalConfiguration.silentError && console.error('iframe not loaded');
+            const exceptionDetails = {
+                Reason: 'LoadIframeFailed',
+                Message: 'iframe not loaded'
+            };
+            this.scenarioMarker?.failScenario(FramedClientEventName.Setup, {
+                AMSClientRuntimeId: this.runtimeId,
+                ExceptionDetails: JSON.stringify(exceptionDetails)
+            });
         }
     }
 
     public async initialize(initConfig: InitConfig): Promise<void> {
+        this.chatToken = initConfig.chatToken;
+
+        this.scenarioMarker?.startScenario(FramedClientEventName.Initialize, {
+            AMSClientRuntimeId: this.runtimeId,
+            ChatId: this.chatToken?.chatId
+        });
+
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][initialize]`);
         this.debug && console.time('ams:initialize');
-        this.chatToken = initConfig.chatToken;
 
         this.skypeTokenAuth();
         this.debug && console.timeEnd('ams:initialize');
+        this.scenarioMarker?.completeScenario(FramedClientEventName.Initialize, {
+            AMSClientRuntimeId: this.runtimeId,
+            ChatId: this.chatToken?.chatId
+        });
     }
 
     public async skypeTokenAuth(chatToken: OmnichannelChatToken | null = null): Promise<void> {
@@ -309,12 +342,18 @@ class FramedClient {
     }
 
     private async loadIframe(): Promise<void> {
-
         return new Promise((resolve, reject) => {
+            this.scenarioMarker?.startScenario(FramedClientEventName.LoadIframe, {
+                AMSClientRuntimeId: this.runtimeId
+            });
+
             this.debug && console.log(`[FramedClient][loadIframe]`);
             this.debug && console.time('ams:loadIframe');
             // next block is to check if the iframe is already loaded and preveent double loading in an efortless way
             if(this.loadIframeState === LoadIframeState.Loading || this.loadIframeState === LoadIframeState.Loaded) {
+                this.scenarioMarker?.completeScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 resolve();
                 return;
             }
@@ -323,6 +362,9 @@ class FramedClient {
             const currentIframe = document.getElementById(this.iframeId);
             if (currentIframe) {
                 this.loadIframeState = LoadIframeState.Loaded;
+                this.scenarioMarker?.completeScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 resolve();
                 return;
             }
@@ -338,11 +380,17 @@ class FramedClient {
                 /* istanbul ignore next */
                 this.debug && console.log('iframe loaded!');
                 this.loadIframeState = LoadIframeState.Loaded;
+                this.scenarioMarker?.completeScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 resolve();
             });
 
             iframeElement.addEventListener('error', () => {
                 this.loadIframeState = LoadIframeState.Failed;
+                this.scenarioMarker?.failScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 reject();
             });
             document.head.append(iframeElement);
