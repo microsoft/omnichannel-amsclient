@@ -342,12 +342,18 @@ class FramedClient {
     }
 
     private async loadIframe(): Promise<void> {
-
         return new Promise((resolve, reject) => {
+            this.scenarioMarker?.startScenario(FramedClientEventName.LoadIframe, {
+                AMSClientRuntimeId: this.runtimeId
+            });
+
             this.debug && console.log(`[FramedClient][loadIframe]`);
             this.debug && console.time('ams:loadIframe');
             // next block is to check if the iframe is already loaded and preveent double loading in an efortless way
             if(this.loadIframeState === LoadIframeState.Loading || this.loadIframeState === LoadIframeState.Loaded) {
+                this.scenarioMarker?.completeScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 resolve();
                 return;
             }
@@ -356,6 +362,9 @@ class FramedClient {
             const currentIframe = document.getElementById(this.iframeId);
             if (currentIframe) {
                 this.loadIframeState = LoadIframeState.Loaded;
+                this.scenarioMarker?.completeScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 resolve();
                 return;
             }
@@ -371,11 +380,17 @@ class FramedClient {
                 /* istanbul ignore next */
                 this.debug && console.log('iframe loaded!');
                 this.loadIframeState = LoadIframeState.Loaded;
+                this.scenarioMarker?.completeScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 resolve();
             });
 
             iframeElement.addEventListener('error', () => {
                 this.loadIframeState = LoadIframeState.Failed;
+                this.scenarioMarker?.failScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId
+                });
                 reject();
             });
             document.head.append(iframeElement);

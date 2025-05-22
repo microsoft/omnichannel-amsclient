@@ -1,6 +1,7 @@
 enum FramedClientEventName {
     Setup = 'FramedClientSetup',
-    Initialize = 'FramedClientInitialize'
+    Initialize = 'FramedClientInitialize',
+    LoadIframe = 'FramedClientLoadIframe'
 }
 
 export default FramedClientEventName;
