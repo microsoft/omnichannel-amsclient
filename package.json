@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/omnichannel-amsclient",
-  "version": "0.1.9-0",
+  "version": "0.1.9",
   "description": "Microsoft Omnichannel AMSClient",
   "files": [
     "lib/**/*"
