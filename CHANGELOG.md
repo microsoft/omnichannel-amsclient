@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add ability for `FramedClient` to pass custom `baseUrl`
+- Add `FramedClient` telemetry events `FramedClientSetup`, `FramedClientInitialize` &  `FramedClientLoadIframe`
 
 ### Changes
 
