@@ -116,13 +116,23 @@ class FramedClient {
     }
 
     public async initialize(initConfig: InitConfig): Promise<void> {
+        this.chatToken = initConfig.chatToken;
+
+        this.scenarioMarker?.startScenario(FramedClientEventName.Initialize, {
+            AMSClientRuntimeId: this.runtimeId,
+            ChatId: this.chatToken?.chatId
+        });
+
         /* istanbul ignore next */
         this.debug && console.log(`[FramedClient][initialize]`);
         this.debug && console.time('ams:initialize');
-        this.chatToken = initConfig.chatToken;
 
         this.skypeTokenAuth();
         this.debug && console.timeEnd('ams:initialize');
+        this.scenarioMarker?.completeScenario(FramedClientEventName.Initialize, {
+            AMSClientRuntimeId: this.runtimeId,
+            ChatId: this.chatToken?.chatId
+        });
     }
 
     public async skypeTokenAuth(chatToken: OmnichannelChatToken | null = null): Promise<void> {
