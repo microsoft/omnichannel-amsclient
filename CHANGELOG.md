@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Removal usage of `document.referrer` in `IframeCommunicator`
+
 ## [0.1.9] - 2025-05-22
 
 ### Added
