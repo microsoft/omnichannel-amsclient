@@ -113,7 +113,7 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
         if (error instanceof AMSError) {
             throw error;
         }
-        throw new AMSError('AMSAuth', url, error);
+        throw new AMSError(error.message || 'AMSAuth', url, error);
     }
 }
 
@@ -156,7 +156,7 @@ const createObject = async (id: string, file: File, chatToken: OmnichannelChatTo
         if (error instanceof AMSError) {
             throw error;
         }
-        throw new AMSError('AMSCreateObjectFailed', url, error);
+        throw new AMSError(error.message || 'AMSCreateObjectFailed', url, error);
     }
 }
 
@@ -196,7 +196,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
         if (error instanceof AMSError) {
             throw error;
         }
-        throw new AMSError('AMSUploadDocumentFailed', url, error);
+        throw new AMSError(error.message || 'AMSUploadDocumentFailed', url, error);
     }
 }
 
@@ -238,7 +238,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
         if (error instanceof AMSError) {
             throw error;
         }
-        throw new AMSError('AMSGetViewStatusFailed', url, error);
+        throw new AMSError(error.message || 'AMSGetViewStatusFailed', url, error);
     }
 }
 
@@ -267,7 +267,7 @@ const getView = async (fileMetadata: FileMetadata, viewLocation: string, chatTok
         return blobResponse;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw new AMSError('AMSGetViewFailed', url, error);
+        throw new AMSError(error.message || 'AMSGetViewFailed', url, error);
     }
 }
 
