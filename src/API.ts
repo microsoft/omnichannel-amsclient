@@ -4,6 +4,7 @@ import AMSViewStatusResponse from "./AMSViewStatusResponse";
 import FileMetadata from "./FileMetadata";
 import GlobalConfiguration from "./GlobalConfiguration";
 import OmnichannelChatToken from "./OmnichannelChatToken";
+import { AMSError } from "./AMSError";
 
 enum AmsApiOperation {
     Create = "Create",
@@ -106,7 +107,7 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
         return response;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw error || new Error('AMSAuth');
+        throw new AMSError('AMSAuth', url, error);
     }
 }
 
@@ -140,13 +141,16 @@ const createObject = async (id: string, file: File, chatToken: OmnichannelChatTo
     try {
         const response = await fetch(url, request as any);  // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!response.ok) {
-            throw new Error(`AMSCreateObjectFailed: ${response.status} ${response.statusText}`);
+            throw new AMSError(`AMSCreateObjectFailed: ${response.status} ${response.statusText}`, url);
         }
         const jsonResponse = await response.json();
         return jsonResponse; // returns document id
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw error || new Error('AMSCreateObjectFailed');
+        if (error instanceof AMSError) {
+            throw error;
+        }
+        throw new AMSError('AMSCreateObjectFailed', url, error);
     }
 }
 
@@ -170,7 +174,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
     try {
         const response = await fetch(url, request as RequestInit);
         if (!response.ok) {
-            throw new Error(`AMSUploadDocumentFailed: ${response.status} ${response.statusText}`);
+            throw new AMSError(`AMSUploadDocumentFailed: ${response.status} ${response.statusText}`, url);
         }
         const fileMetadata = {
             name: file.name,
@@ -183,7 +187,10 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
         return fileMetadata;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw error || new Error('AMSUploadDocumentFailed');
+        if (error instanceof AMSError) {
+            throw error;
+        }
+        throw new AMSError('AMSUploadDocumentFailed', url, error);
     }
 }
 
@@ -208,7 +215,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
         const { content_state, view_state, view_location } = jsonResponse;
 
         if (!view_location) {
-            throw new Error('view_location is empty');
+            throw new AMSError('view_location is empty', url);
         }
 
         if (view_state && view_state !== AMSFileStatus.Ready.toString()) {
@@ -216,13 +223,16 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
         }
 
         if (content_state === AMSFileStatus.Expired.toString()) {
-            throw new Error('content_state is expired');
+            throw new AMSError('content_state is expired', url);
         }
 
         return jsonResponse;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw error || new Error('AMSGetViewStatusFailed');
+        if (error instanceof AMSError) {
+            throw error;
+        }
+        throw new AMSError('AMSGetViewStatusFailed', url, error);
     }
 }
 
@@ -251,7 +261,7 @@ const getView = async (fileMetadata: FileMetadata, viewLocation: string, chatTok
         return blobResponse;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw error || new Error('AMSGetViewFailed');
+        throw new AMSError('AMSGetViewFailed', url, error);
     }
 }
 
