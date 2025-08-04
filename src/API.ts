@@ -106,7 +106,7 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
         return response;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw new Error('AMSAuth');
+        throw error || new Error('AMSAuth');
     }
 }
 
@@ -140,13 +140,13 @@ const createObject = async (id: string, file: File, chatToken: OmnichannelChatTo
     try {
         const response = await fetch(url, request as any);  // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!response.ok) {
-            throw new Error("AMSCreateObjectFailed");
+            throw new Error(`AMSCreateObjectFailed: ${response.status} ${response.statusText}`);
         }
         const jsonResponse = await response.json();
         return jsonResponse; // returns document id
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw new Error('AMSCreateObjectFailed');
+        throw error || new Error('AMSCreateObjectFailed');
     }
 }
 
@@ -170,7 +170,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
     try {
         const response = await fetch(url, request as RequestInit);
         if (!response.ok) {
-            throw new Error("AMSUploadDocumentFailed");
+            throw new Error(`AMSUploadDocumentFailed: ${response.status} ${response.statusText}`);
         }
         const fileMetadata = {
             name: file.name,
@@ -183,7 +183,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
         return fileMetadata;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw new Error('AMSUploadDocumentFailed');
+        throw error || new Error('AMSUploadDocumentFailed');
     }
 }
 
@@ -222,7 +222,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
         return jsonResponse;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw new Error('AMSGetViewStatusFailed');
+        throw error || new Error('AMSGetViewStatusFailed');
     }
 }
 
@@ -251,7 +251,7 @@ const getView = async (fileMetadata: FileMetadata, viewLocation: string, chatTok
         return blobResponse;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
-        throw new Error('AMSGetViewFailed');
+        throw error || new Error('AMSGetViewFailed');
     }
 }
 

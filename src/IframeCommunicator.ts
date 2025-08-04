@@ -156,12 +156,14 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, postMessageData, PostMessageEventStatus.Failure);
 
+                    const requestPath = `${data.chatToken.amsEndpoint || data.chatToken.regionGTMS?.ams}/v1/objects`;
                     this.scenarioMarker.failScenario(PostMessageEventName.CreateObject, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: requestPath,
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.UploadDocument) {
@@ -202,13 +204,16 @@ class IframeCommunicator {
                     };
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, postMessageData, PostMessageEventStatus.Failure);
 
+                    const typeObject = data.file.type.toLowerCase().includes('image') ? 'imgpsh' : 'original';
+                    const requestPath = `${data.chatToken.amsEndpoint || data.chatToken.regionGTMS?.ams}/v1/objects/${data.documentId}/content/${typeObject}`;
                     this.scenarioMarker.failScenario(PostMessageEventName.UploadDocument, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: requestPath,
                         DocumentId: data.documentId,
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.GetViewStatus) {
@@ -243,13 +248,16 @@ class IframeCommunicator {
                 } catch (error) {
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetViewStatus, {}, PostMessageEventStatus.Failure);
 
+                    const viewType = data.fileMetadata.type.toLowerCase().includes('image') ? 'imgpsh_fullsize_anim' : 'original';
+                    const requestPath = `${data.chatToken.amsEndpoint || data.chatToken.regionGTMS?.ams}/v1/objects/${data.fileMetadata.id}/views/${viewType}/status`;
                     this.scenarioMarker.failScenario(PostMessageEventName.GetViewStatus, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: requestPath,
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.GetView) {
@@ -287,10 +295,11 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.GetView, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: data.viewLocation,
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             }

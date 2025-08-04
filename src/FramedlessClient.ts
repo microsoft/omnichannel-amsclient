@@ -110,12 +110,14 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
+            const requestPath = `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/objects`;
             this.scenarioMarker?.failScenario(PostMessageEventName.CreateObject, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: requestPath,
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('createObject');
@@ -144,13 +146,16 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
+            const typeObject = file.type.toLowerCase().includes('image') ? 'imgpsh' : 'original';
+            const requestPath = `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/objects/${documentId}/content/${typeObject}`;
             this.scenarioMarker?.failScenario(PostMessageEventName.UploadDocument, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: requestPath,
                 DocumentId: documentId,
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('uploadDocument');
@@ -179,13 +184,16 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
+            const viewType = fileMetadata.type.toLowerCase().includes('image') ? 'imgpsh_fullsize_anim' : 'original';
+            const requestPath = `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${viewType}/status`;
             this.scenarioMarker?.failScenario(PostMessageEventName.GetViewStatus, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: requestPath,
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('getViewStatus');
@@ -217,10 +225,11 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.GetView, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: viewLocation,
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('getView');
