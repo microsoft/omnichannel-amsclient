@@ -104,9 +104,15 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
 
     try {
         const response = await fetch(url, request);
+        if (!response.ok) {
+            throw new AMSError(`AMSAuth: ${response.status} ${response.statusText}`, url);
+        }
         return response;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
+        if (error instanceof AMSError) {
+            throw error;
+        }
         throw new AMSError('AMSAuth', url, error);
     }
 }
