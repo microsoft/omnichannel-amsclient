@@ -78,11 +78,10 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
-            const requestPath = error instanceof AMSError ? error.requestUrl : `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/skypetokenauth`;
             this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: requestPath,
+                RequestPath: (error as AMSError).requestUrl,
                 ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
@@ -111,11 +110,10 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
-            const requestPath = error instanceof AMSError ? error.requestUrl : `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/objects`;
             this.scenarioMarker?.failScenario(PostMessageEventName.CreateObject, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: requestPath,
+                RequestPath: (error as AMSError).requestUrl,
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
                 ExceptionDetails: error instanceof Error ? error.message : String(error)
@@ -147,17 +145,10 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
-            let requestPath: string;
-            if (error instanceof AMSError) {
-                requestPath = error.requestUrl;
-            } else {
-                const typeObject = file.type.toLowerCase().includes('image') ? 'imgpsh' : 'original';
-                requestPath = `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/objects/${documentId}/content/${typeObject}`;
-            }
             this.scenarioMarker?.failScenario(PostMessageEventName.UploadDocument, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: requestPath,
+                RequestPath: (error as AMSError).requestUrl,
                 DocumentId: documentId,
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
@@ -190,17 +181,10 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
-            let requestPath: string;
-            if (error instanceof AMSError) {
-                requestPath = error.requestUrl;
-            } else {
-                const viewType = fileMetadata.type.toLowerCase().includes('image') ? 'imgpsh_fullsize_anim' : 'original';
-                requestPath = `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${viewType}/status`;
-            }
             this.scenarioMarker?.failScenario(PostMessageEventName.GetViewStatus, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: requestPath,
+                RequestPath: (error as AMSError).requestUrl,
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
@@ -233,11 +217,10 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
-            const requestPath = error instanceof AMSError ? error.requestUrl : viewLocation;
             this.scenarioMarker?.failScenario(PostMessageEventName.GetView, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: requestPath,
+                RequestPath: (error as AMSError).requestUrl,
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
