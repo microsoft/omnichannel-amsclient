@@ -111,10 +111,12 @@ class IframeCommunicator {
                 } catch (error) {
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.SkypeTokenAuth, {}, PostMessageEventStatus.Failure);
 
+                    const requestPath = `${data.chatToken.amsEndpoint || data.chatToken.regionGTMS?.ams}/v1/skypetokenauth`;
                     this.scenarioMarker.failScenario(PostMessageEventName.SkypeTokenAuth, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        ExceptionDetails: error
+                        RequestPath: requestPath,
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.CreateObject) {

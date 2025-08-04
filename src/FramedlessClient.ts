@@ -77,10 +77,12 @@ class FramedlessClient {
 
             return response;
         } catch (error) {
+            const requestPath = `${(chatToken || this.chatToken).amsEndpoint || (chatToken || this.chatToken).regionGTMS?.ams}/v1/skypetokenauth`;
             this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                ExceptionDetails: error
+                RequestPath: requestPath,
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('skypeTokenAuth');
