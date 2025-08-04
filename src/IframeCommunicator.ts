@@ -115,7 +115,7 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.SkypeTokenAuth, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: (error as AMSError).requestUrl,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
@@ -159,7 +159,7 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.CreateObject, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: (error as AMSError).requestUrl,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
                         ExceptionDetails: error instanceof Error ? error.message : String(error)
@@ -206,7 +206,7 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.UploadDocument, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: (error as AMSError).requestUrl,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         DocumentId: data.documentId,
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
@@ -248,7 +248,7 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.GetViewStatus, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: (error as AMSError).requestUrl,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),
@@ -290,7 +290,7 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.GetView, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: (error as AMSError).requestUrl,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),

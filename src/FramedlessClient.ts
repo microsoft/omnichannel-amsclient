@@ -81,7 +81,7 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: (error as AMSError).requestUrl,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
@@ -113,7 +113,7 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.CreateObject, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: (error as AMSError).requestUrl,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
                 ExceptionDetails: error instanceof Error ? error.message : String(error)
@@ -148,7 +148,7 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.UploadDocument, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: (error as AMSError).requestUrl,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 DocumentId: documentId,
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
@@ -184,7 +184,7 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.GetViewStatus, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: (error as AMSError).requestUrl,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
@@ -220,7 +220,7 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.GetView, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                RequestPath: (error as AMSError).requestUrl,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
