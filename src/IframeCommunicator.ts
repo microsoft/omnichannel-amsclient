@@ -1,5 +1,6 @@
 import AMSLogData from "./AMSLogData";
 import API from "./API";
+import { AMSError } from "./AMSError";
 import fetchClientId from "./utils/fetchClientId";
 import fetchDebugConfig from "./utils/fetchDebugConfig";
 import fetchTelemetryConfig from "./utils/fetchTelemetryConfig";
@@ -114,7 +115,8 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.SkypeTokenAuth, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        ExceptionDetails: error
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.CreateObject) {
@@ -157,9 +159,10 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.CreateObject, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.UploadDocument) {
@@ -203,10 +206,11 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.UploadDocument, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         DocumentId: data.documentId,
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.GetViewStatus) {
@@ -244,10 +248,11 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.GetViewStatus, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             } else if (event.data.eventName === PostMessageEventName.GetView) {
@@ -285,10 +290,11 @@ class IframeCommunicator {
                     this.scenarioMarker.failScenario(PostMessageEventName.GetView, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
+                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),
-                        ExceptionDetails: error
+                        ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
             }

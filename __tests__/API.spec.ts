@@ -12,11 +12,33 @@ describe('API', () => {
             token: ''
         };
 
-        (global as any).fetch = jest.fn(() => Promise.resolve());
+        (global as any).fetch = jest.fn(() => Promise.resolve({
+            ok: true
+        }));
 
         await API.skypeTokenAuth(token);
 
         expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('API.skypeTokenAuth() should throw error when response.ok is false', async () => {
+        const token = {
+            chatId: '',
+            token: ''
+        };
+
+        (global as any).fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 401,
+            statusText: 'Unauthorized'
+        }));
+
+        try {
+            await API.skypeTokenAuth(token);
+            fail('skypeTokenAuth should throw');
+        } catch (error) {
+            expect(error).not.toBe(undefined);
+        }
     });
 
     it('API.skypeTokenAuth() should throw an error if API does not succeed', async () => {

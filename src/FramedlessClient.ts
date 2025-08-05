@@ -3,6 +3,7 @@ import AMSFileInfo from "./AMSFileInfo";
 import AMSLogger from "./AMSLogger";
 import AMSViewStatusResponse from "./AMSViewStatusResponse";
 import API from "./API";
+import { AMSError } from "./AMSError";
 import FileMetadata from "./FileMetadata";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
@@ -80,7 +81,8 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.SkypeTokenAuth, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
-                ExceptionDetails: error
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('skypeTokenAuth');
@@ -111,9 +113,10 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.CreateObject, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('createObject');
@@ -145,10 +148,11 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.UploadDocument, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 DocumentId: documentId,
                 MimeType: file.type,
                 FileExtension: extractFileExtension(file.name),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('uploadDocument');
@@ -180,10 +184,11 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.GetViewStatus, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('getViewStatus');
@@ -215,10 +220,11 @@ class FramedlessClient {
             this.scenarioMarker?.failScenario(PostMessageEventName.GetView, {
                 AMSClientRuntimeId: this.runtimeId,
                 ChatId: chatToken ? chatToken.chatId : this.chatToken?.chatId,
+                RequestPath: error instanceof AMSError ? error.requestUrl : '',
                 DocumentId: fileMetadata?.id,
                 MimeType: fileMetadata?.type,
                 FileExtension: extractFileExtension(fileMetadata?.name || ''),
-                ExceptionDetails: error
+                ExceptionDetails: error instanceof Error ? error.message : String(error)
             });
 
             throw new Error('getView');
