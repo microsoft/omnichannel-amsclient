@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.11] - 2025-08-06
+
+### Changes
+
+- Add `RequestPath` to telemetry
+- Use `AMSError` in `FramedlessClient`
+
 ## [0.1.10] - 2025-05-28
 
 ### Changed
