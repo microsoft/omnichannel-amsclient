@@ -1,464 +1,144 @@
-# omnichannel-amsclient - Claude Code Instructions
-
-## Repository Ecosystem
-
-**This workspace may contain up to 6 related repositories.** Not all teams have all repos. Always be aware of which repository you're in when making changes.
-
-| Repository | Type | Purpose | Typical Location |
-|------------|------|---------|------------------|
-| **CRM.Omnichannel** | Monorepo (Backend) | 20+ microservices for Omnichannel platform | `<workspace-root>/CRM.Omnichannel/` |
-| **ConversationControl** | Frontend (Agent UI) | Agent experience and conversation management UI | `<workspace-root>/CRM.OmniChannel.ConversationControl/` |
-| **LiveChatWidget** | Frontend (Customer) | Customer-facing chat widget | `<workspace-root>/CRM.OmniChannel.LiveChatWidget/` |
-| **omnichannel-chat-sdk** | Public SDK | TypeScript SDK for chat integration | `<workspace-root>/omnichannel-chat-sdk/` |
-| **omnichannel-chat-widget** | Public Components | React component library | `<workspace-root>/omnichannel-chat-widget/` |
-| **omnichannel-amsclient** | Shared Library | File upload/download client | `<workspace-root>/omnichannel-amsclient/` |
-
----
+# omnichannel-amsclient — Claude Code Instructions
 
 ## Quick Context
-- **Purpose:** Attachment Management Service (AMS) client for file uploads/downloads in conversations
-- **Type:** TypeScript Library (npm package)
-- **Tech Stack:** TypeScript, esbuild, Jest
-- **Distribution:** npm registry (@microsoft/omnichannel-amsclient)
-- **Consumers:** CRM.OmniChannel.ConversationControl (agent file sharing), CRM.OmniChannel.LiveChatWidget (customer file uploads)
 
-## Architecture Overview
+- **Package**: `@microsoft/omnichannel-amsclient` v0.1.12
+- **Purpose**: File upload/download client for Omnichannel conversations via Azure Messaging Services (AMS)
+- **Tech**: TypeScript, esbuild (CDN), TSC (npm), Jest, ESLint
+- **Zero runtime dependencies**
+- **Consumers**: omnichannel-chat-sdk (primary), chat-widget (via SDK), ConversationControl (agent UI)
 
-**What is omnichannel-amsclient?**
+## Architecture
 
-This is a lightweight TypeScript client for uploading and downloading files in Omnichannel conversations. It abstracts the AMS backend APIs and handles file validation, Azure Blob Storage integration, and SAS token management.
+Two-mode client selected by `framedMode` config flag:
 
-**Key Features:**
-- File upload with validation (size, type, malware scanning)
-- File download with SAS token authentication
-- Progress tracking for uploads/downloads
-- TypeScript type definitions
-- Error handling with proper error codes
+```
+createAMSClient(config)
+  ├── framedMode: true  → FramedClient   (browser — iframe isolation + postMessage)
+  └── framedMode: false → FramedlessClient (Node.js / React Native — direct fetch)
+```
 
-**Integration:**
-- **Backend:** AMS APIs in MessagingRuntime (`/api/ams/v1/files/*`)
-- **Azure Blob Storage:** Files stored encrypted in Blob Storage
-- **Consumers:** ConversationControl (agent), LiveChatWidget (customer)
+**FramedClient** loads a hidden iframe (`{baseUrl}/{version}/iframe.html`) containing `IframeCommunicator`. All AMS API calls execute inside the iframe. Host ↔ iframe communication via `postMessage` with request/response pattern and UUID-based request correlation.
 
----
+**FramedlessClient** calls `API.ts` functions directly via `fetch`.
 
-## Build & Test Workflow
+**API layer** (`API.ts`): Five functions — `skypeTokenAuth`, `createObject`, `uploadDocument`, `getViewStatus`, `getView`. Auth via `skype_token` header. AMS endpoint from `chatToken.amsEndpoint || chatToken.regionGTMS?.ams`.
 
-### Prerequisites
-- Node.js (version in package.json engines)
-- npm package manager
+## Source File Map
 
-### Setup
+```
+src/
+├── index.ts                    # Entry — exports createAMSClient, sets CDN global
+├── createAMSClient.ts          # Factory — returns FramedClient or FramedlessClient
+├── API.ts                      # AMS REST calls (skypeTokenAuth, CRUD operations)
+├── FramedClient.ts             # Browser client (iframe + postMessage, 400 lines)
+├── FramedlessClient.ts         # Node/RN client (direct fetch, 270 lines)
+├── IframeCommunicator.ts       # Runs inside iframe, bridges postMessage ↔ API (317 lines)
+├── AMSError.ts                 # Error class (extends Error + requestUrl + originalError)
+├── AMSLogger.ts                # Logger wrapper (delegates to PluggableLogger)
+├── GlobalConfiguration.ts      # Static config (silentError, debug)
+├── config.ts                   # Build-time config (baseUrl, sdkVersion — overwritten by esbuild)
+├── telemetry/
+│   ├── ScenarioMarker.ts       # Start/complete/fail tracking with elapsed time
+│   ├── EventMarker.ts          # Event name suffixing (Started/Completed/Failed)
+│   └── StopWatch.ts            # Simple elapsed time measurement
+├── utils/
+│   ├── platform.ts             # isBrowser/isNode/isReactNative detection
+│   ├── uuid.ts                 # UUID v4 generator (Math.random based)
+│   ├── extractFileExtension.ts # path.extname() equivalent (no path module dependency)
+│   ├── fetchClientId.ts        # Read clientId from iframe URL params
+│   ├── fetchDebugConfig.ts     # Read debug flag from iframe URL params
+│   └── fetchTelemetryConfig.ts # Read telemetry flag from iframe URL params
+└── [type files]                # Interfaces/enums (see below)
+```
+
+### Type Files
+
+| File | Type | Key Fields |
+|------|------|------------|
+| `OmnichannelChatToken.ts` | interface | chatId, token, regionGTMS, amsEndpoint |
+| `FileMetadata.ts` | interface | id, type, name?, size?, url? |
+| `AMSCreateObjectResponse.ts` | interface | id |
+| `AMSUploadDocumentResponse.ts` | interface | id, name, size, type, url, fileSharingProtocolType |
+| `AMSViewStatusResponse.ts` | interface | view_location, content_state, view_state, view_length |
+| `AMSFileInfo.ts` | interface | name, type, size, data (ArrayBuffer) |
+| `AMSLogData.ts` | interface | AMSClientRuntimeId, ChatId, Event, AMSClientVersion |
+| `PluggableLogger.ts` | interface | logClientSdkTelemetryEvent(logLevel, event) |
+| `InitConfig.ts` | interface | chatToken |
+| `FramedClientConfig.ts` | interface | multiClient?, baseUrl? |
+| `PostMessageRequestData.ts` | interface | requestId?, file?, chatToken?, documentId?, fileMetadata? |
+| `LogLevel.ts` | enum | INFO, DEBUG, WARN, ERROR, LOG |
+| `PostMessageEventName.ts` | enum | IframeLoaded, SkypeTokenAuth, CreateObject, UploadDocument, GetViewStatus, GetView, SendTelemetry |
+| `PostMessageEventType.ts` | enum | None, Request, Response |
+| `PostMessageEventStatus.ts` | enum | None, Success, Failure |
+| `FramedClientEventName.ts` | enum | Setup, Initialize, LoadIframe |
+
+## Build & Test
+
 ```bash
-cd omnichannel-amsclient
-
-# Install dependencies
 npm install
+npm run build:tsc              # TSC → lib/ (CJS output, type declarations)
+npm test                       # Jest (ts-jest, node environment)
+npm run lint                   # ESLint with @typescript-eslint
 ```
 
-### Common Commands
-
-**Build:**
-- **Build library:** `npm run build` - esbuild compilation (ESM, CJS)
-- **Watch mode:** `npm run watch` - Incremental development
-- **Type check:** `npm run typecheck` - TypeScript validation
-
-**Test:**
-- **Unit tests:** `npm test` - Jest tests
-- **Coverage:** `npm run coverage` - Test coverage report
-- **Lint:** `npm run lint` - ESLint validation
-
-**Release:**
-- **Publish:** `npm publish` - Publish to npm registry
-- **Version bump:** `npm version <major|minor|patch>` - Semantic versioning
-
----
-
-## Coding Standards
-
-### TypeScript Best Practices
-
-- **Avoid `any` type** - Use proper type definitions
-- **Explicit return types** - Always declare function return types
-- **Async/await preferred** - Over .then() chains
-- **Error handling** - Use proper error classes with error codes
-
-**File Upload Example:**
-```typescript
-// ✅ CORRECT - Explicit types, async/await, error handling
-export interface UploadFileOptions {
-    conversationId: string;
-    file: File | Blob;
-    fileName: string;
-    onProgress?: (progress: number) => void;
-}
-
-export interface UploadFileResult {
-    fileId: string;
-    blobUrl: string;
-    sasToken: string;
-    expiresAt: Date;
-}
-
-export async function uploadFile(
-    options: UploadFileOptions
-): Promise<UploadFileResult> {
-    const { conversationId, file, fileName, onProgress } = options;
-
-    // Validate inputs
-    if (!conversationId) {
-        throw new AMSClientError({
-            message: 'conversationId is required',
-            errorCode: 'INVALID_INPUT'
-        });
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-        throw new AMSClientError({
-            message: `File size exceeds maximum (${MAX_FILE_SIZE} bytes)`,
-            errorCode: 'FILE_TOO_LARGE'
-        });
-    }
-
-    try {
-        // Request upload URL from AMS backend
-        const uploadUrlResponse = await fetch('/api/ams/v1/files/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ conversationId, fileName, fileSize: file.size })
-        });
-
-        if (!uploadUrlResponse.ok) {
-            throw new Error('Failed to get upload URL');
-        }
-
-        const { uploadUrl, fileId } = await uploadUrlResponse.json();
-
-        // Upload to Azure Blob Storage
-        await uploadToBlob(uploadUrl, file, onProgress);
-
-        // Confirm upload with backend
-        const confirmResponse = await fetch(`/api/ams/v1/files/${fileId}/confirm`, {
-            method: 'POST'
-        });
-
-        if (!confirmResponse.ok) {
-            throw new Error('Failed to confirm upload');
-        }
-
-        const result = await confirmResponse.json();
-        return {
-            fileId: result.fileId,
-            blobUrl: result.blobUrl,
-            sasToken: result.sasToken,
-            expiresAt: new Date(result.expiresAt)
-        };
-    } catch (error) {
-        throw new AMSClientError({
-            message: 'File upload failed',
-            errorCode: 'UPLOAD_FAILED',
-            innerError: error as Error
-        });
-    }
-}
-
-// Helper function for blob upload
-async function uploadToBlob(
-    url: string,
-    file: File | Blob,
-    onProgress?: (progress: number) => void
-): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (event) => {
-            if (event.lengthComputable && onProgress) {
-                const progress = (event.loaded / event.total) * 100;
-                onProgress(progress);
-            }
-        });
-
-        xhr.addEventListener('load', () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                resolve();
-            } else {
-                reject(new Error(`Upload failed with status ${xhr.status}`));
-            }
-        });
-
-        xhr.addEventListener('error', () => {
-            reject(new Error('Network error during upload'));
-        });
-
-        xhr.open('PUT', url);
-        xhr.setRequestHeader('x-ms-blob-type', 'BlockBlob');
-        xhr.send(file);
-    });
-}
+**CDN build** (requires env vars):
+```bash
+npm run build:tsc
+BASE_URL=https://[blob-url] SDK_VERSION=[version] node ./esbuild.config.js
+# Outputs: dist/SDK.js, dist/SDK.min.js, dist/iframe.js, dist/iframe.min.js, dist/iframe.html
 ```
 
-**File Download Example:**
-```typescript
-export interface DownloadFileOptions {
-    fileId: string;
-    conversationId: string;
-    onProgress?: (progress: number) => void;
-}
+**CI**: GitHub Actions — PR (build:tsc + test + lint on Node 22), Release (CDN upload to Azure Blob Storage + npm publish). Azure Pipelines for Component Governance scan.
 
-export async function downloadFile(
-    options: DownloadFileOptions
-): Promise<Blob> {
-    const { fileId, conversationId, onProgress } = options;
+## Key Patterns
 
-    // Get download URL with SAS token from backend
-    const response = await fetch(`/api/ams/v1/files/${fileId}/download`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId })
-    });
+### Auth
+Skype token auth: `Authorization: skype_token {token}` header on all AMS requests. Authenticated via `POST /v1/skypetokenauth`.
 
-    if (!response.ok) {
-        throw new AMSClientError({
-            message: 'Failed to get download URL',
-            errorCode: 'DOWNLOAD_FAILED'
-        });
-    }
-
-    const { downloadUrl } = await response.json();
-
-    // Download from Azure Blob Storage
-    return downloadFromBlob(downloadUrl, onProgress);
-}
+### AMS Endpoint Resolution
 ```
-
----
-
-## Error Handling
-
-**Use proper error classes with error codes:**
-
-```typescript
-export interface AMSClientErrorDetails {
-    message: string;
-    errorCode: string;
-    innerError?: Error;
-    context?: Record<string, unknown>;
-}
-
-export class AMSClientError extends Error {
-    public readonly errorCode: string;
-    public readonly innerError?: Error;
-    public readonly context?: Record<string, unknown>;
-
-    constructor(details: AMSClientErrorDetails) {
-        super(details.message);
-        this.name = 'AMSClientError';
-        this.errorCode = details.errorCode;
-        this.innerError = details.innerError;
-        this.context = details.context;
-    }
-}
-
-// Common error codes
-export const AMSErrorCodes = {
-    INVALID_INPUT: 'INVALID_INPUT',
-    FILE_TOO_LARGE: 'FILE_TOO_LARGE',
-    UNSUPPORTED_FILE_TYPE: 'UNSUPPORTED_FILE_TYPE',
-    UPLOAD_FAILED: 'UPLOAD_FAILED',
-    DOWNLOAD_FAILED: 'DOWNLOAD_FAILED',
-    MALWARE_DETECTED: 'MALWARE_DETECTED',
-    SAS_TOKEN_EXPIRED: 'SAS_TOKEN_EXPIRED'
-} as const;
+chatToken.amsEndpoint || chatToken.regionGTMS?.ams
 ```
+Fallback: `https://us-api.asm.skype.com` (hardcoded in `patchChatToken()`).
 
----
+### Image vs Document API Paths
+MIME type determines the AMS API path:
+- **Image** (jpeg/png/gif/heic/webp): `pish/image` for create, `imgpsh` for upload, `imgpsh_fullsize_anim` for view
+- **Document** (everything else): `sharing/file` for create, `original` for upload/view
 
-## File Validation
+### Telemetry
+`ScenarioMarker` emits three events per operation:
+- `{Operation}Started` — on entry
+- `{Operation}Completed` — on success (with ElapsedTimeInMilliseconds)
+- `{Operation}Failed` — on error (with ExceptionDetails)
 
-**Validate files before upload:**
+Telemetry flows through `AMSLogger` → `PluggableLogger.logClientSdkTelemetryEvent()`. In framed mode, telemetry is forwarded from iframe to parent via `SendTelemetry` postMessage events.
 
-```typescript
-export interface FileValidationConfig {
-    maxFileSize: number; // bytes
-    allowedFileTypes: string[]; // MIME types
-}
+### Error Handling
+`AMSError` extends `Error` with `requestUrl` and `originalError`. API methods throw AMSError with descriptive messages. `GlobalConfiguration.silentError` controls whether errors are logged to console.
 
-export const DEFAULT_FILE_VALIDATION: FileValidationConfig = {
-    maxFileSize: 25 * 1024 * 1024, // 25 MB
-    allowedFileTypes: [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/plain'
-    ]
-};
-
-export function validateFile(
-    file: File,
-    config: FileValidationConfig = DEFAULT_FILE_VALIDATION
-): void {
-    // Check file size
-    if (file.size > config.maxFileSize) {
-        throw new AMSClientError({
-            message: `File size (${file.size} bytes) exceeds maximum (${config.maxFileSize} bytes)`,
-            errorCode: AMSErrorCodes.FILE_TOO_LARGE,
-            context: { fileName: file.name, fileSize: file.size }
-        });
-    }
-
-    // Check file type
-    if (!config.allowedFileTypes.includes(file.type)) {
-        throw new AMSClientError({
-            message: `File type ${file.type} is not allowed`,
-            errorCode: AMSErrorCodes.UNSUPPORTED_FILE_TYPE,
-            context: { fileName: file.name, fileType: file.type }
-        });
-    }
-}
+### FramedClient Iframe Lifecycle
 ```
-
----
-
-## Testing Strategy
-
-**Unit Tests (Jest):**
-- **Location:** `__tests__/` directory
-- **Run:** `npm test`
-- **Coverage target:** >80% for business logic
-
-**Test Best Practices:**
-```typescript
-import { uploadFile, AMSClientError, AMSErrorCodes } from '../src';
-
-describe('uploadFile', () => {
-    it('should upload file successfully', async () => {
-        const mockFile = new File(['content'], 'test.txt', { type: 'text/plain' });
-        const options = {
-            conversationId: 'conv-123',
-            file: mockFile,
-            fileName: 'test.txt'
-        };
-
-        // Mock fetch responses
-        global.fetch = jest.fn()
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ uploadUrl: 'https://blob.url', fileId: 'file-123' }) })
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ fileId: 'file-123', blobUrl: 'https://blob.url', sasToken: 'token', expiresAt: new Date() }) });
-
-        const result = await uploadFile(options);
-
-        expect(result.fileId).toBe('file-123');
-        expect(result.blobUrl).toBe('https://blob.url');
-    });
-
-    it('should throw error for file too large', async () => {
-        const largeFile = new File(['x'.repeat(30 * 1024 * 1024)], 'large.txt');
-        const options = {
-            conversationId: 'conv-123',
-            file: largeFile,
-            fileName: 'large.txt'
-        };
-
-        await expect(uploadFile(options)).rejects.toThrow(AMSClientError);
-        await expect(uploadFile(options)).rejects.toMatchObject({
-            errorCode: AMSErrorCodes.FILE_TOO_LARGE
-        });
-    });
-
-    it('should track upload progress', async () => {
-        const mockFile = new File(['content'], 'test.txt');
-        const onProgress = jest.fn();
-        const options = {
-            conversationId: 'conv-123',
-            file: mockFile,
-            fileName: 'test.txt',
-            onProgress
-        };
-
-        // Mock implementation...
-
-        await uploadFile(options);
-
-        expect(onProgress).toHaveBeenCalled();
-        expect(onProgress).toHaveBeenCalledWith(expect.any(Number));
-    });
-});
+NotLoaded → Loading → Loaded
+                    → Failed
 ```
+Iframe is loaded once, reused across operations. `dispose()` removes the iframe and resets state to `NotLoaded`.
 
----
+## Known Quirks
 
-## Integration with Other Repos
-
-**This client integrates with:**
-- **CRM.Omnichannel (Backend):** AMS APIs in MessagingRuntime
-- **Azure Blob Storage:** Direct upload/download to blob storage
-
-**Consumed by:**
-- **CRM.OmniChannel.ConversationControl** (npm dependency) - Agent file sharing
-- **CRM.OmniChannel.LiveChatWidget** (npm dependency) - Customer file uploads
-
-**When changing client APIs:**
-- This is a **shared library** - changes affect both ConversationControl and LiveChatWidget
-- Use semantic versioning: major version for breaking changes
-- Coordinate with both frontend teams
-- Update CHANGELOG.md with migration guide
-
----
-
-## Security Considerations
-
-**File Upload Security:**
-- **Size limits:** Enforce maximum file size (default 25MB)
-- **Type validation:** Only allow approved MIME types
-- **Malware scanning:** Backend scans files with Azure Defender
-- **SAS tokens:** Time-limited (1 hour expiration)
-
-**File Download Security:**
-- **Authorization:** Backend validates user can access file
-- **SAS tokens:** Generate fresh token per download request
-- **HTTPS only:** Never use HTTP for file transfers
-
----
-
-## Pull Request Guidelines
-
-1. **Code standards:** Follow TypeScript best practices
-2. **Commit messages:** Conventional commit format (feat:, fix:, chore:, etc.)
-3. **Testing:** All tests must pass, add tests for new functionality
-4. **Error handling:** Use AMSClientError with proper error codes
-5. **Documentation:** Update README.md if APIs change
-6. **CHANGELOG:** Update CHANGELOG.md under [Unreleased] section
-
----
-
-## Common Issues & Troubleshooting
-
-**Upload Failures:**
-- Check file size limits (default 25MB)
-- Verify file type is in allowed list
-- Check network connectivity to Azure Blob Storage
-- Verify SAS token not expired
-
-**Download Failures:**
-- Check authorization (user has access to conversation)
-- Verify SAS token not expired (1 hour limit)
-- Check file exists in blob storage
-
-**Build Issues:**
-- Clear node_modules: `rm -rf node_modules && npm install`
-- Check Node version: `node --version`
-- Verify esbuild installed correctly
-
----
+1. **`config.ts`** — `baseUrl` and `sdkVersion` are placeholder values overwritten at CDN build time by `esbuild.config.js` (which writes to `lib/config.js`).
+2. **`patchChatToken()`** in API.ts mutates the chatToken object in-place on every API call.
+3. **`typeof window === undefined`** in `index.ts` — missing quotes (should be `=== 'undefined'`). The IIFE always executes.
+4. **`silentError` default** — `config.silentError || true` in createAMSClient always evaluates to `true`.
+5. **IframeCommunicator `postMessage('*')`** — uses wildcard origin for messages to parent window.
+6. **Dead code** — Commented-out `uploadFile()` and `downloadFile()` in FramedlessClient.
 
 ## Documentation
 
-- **[README.md](README.md)** - Client usage, API reference, examples
-- **[CHANGELOG.md](CHANGELOG.md)** - Release history
-- **[SECURITY.md](SECURITY.md)** - Security policies
-
----
-
-**Summary:** Lightweight file upload/download client for Omnichannel conversations. Focus on proper validation, error handling, and security (SAS tokens, malware scanning). Coordinate API changes with both ConversationControl and LiveChatWidget teams.
+- `README.md` — Usage guide, API reference, development setup
+- `CLAUDE.md` — This file (developer reference for Claude Code)
+- `docs/CHANGELOG.md` — Release history
+- `docs/CODE_OF_CONDUCT.md` — Microsoft Open Source Code of Conduct
+- `docs/SECURITY.md` — Security vulnerability reporting
+- `docs/SUPPORT.md` — Support information
