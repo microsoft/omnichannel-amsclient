@@ -234,7 +234,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-See also: [Code of Conduct](docs/CODE_OF_CONDUCT.md) | [Security](docs/SECURITY.md) | [Support](docs/SUPPORT.md) | [Changelog](docs/CHANGELOG.md)
+See also: [Releasing](docs/RELEASING.md) | [Code of Conduct](docs/CODE_OF_CONDUCT.md) | [Security](docs/SECURITY.md) | [Support](docs/SUPPORT.md) | [Changelog](docs/CHANGELOG.md)
 
 ## Trademarks
 
