@@ -29,6 +29,9 @@ jobs:
           echo "name=$(jq -r '.name' package.json)" >> "$GITHUB_OUTPUT"
           echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest
+
       - name: Install packages
         run: npm install
 
@@ -36,4 +39,4 @@ jobs:
         run: npm run build:tsc
 
       - name: Publish ${{ steps.read-package-json.outputs.name }}@${{ steps.read-package-json.outputs.version }}
-        run: npm publish --provenance --tag latest --access public
+        run: npm publish --provenance --access public
