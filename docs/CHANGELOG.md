@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-03-03
+
+### Changed
+
+- Switch npm publishing to GitHub Actions OIDC trusted publishing (no NPM_TOKEN needed)
+- Split release CI into separate CDN and npm workflows
+- Dev versions now auto-publish on push to main (e.g. `0.1.14-main.abc1234`)
+- Reorganized documentation into `docs/` folder
+- Rewrote README with accurate API reference and client mode docs
+- Rewrote CLAUDE.md with source-of-truth architecture
+
 ## [0.1.12] - 2026-01-22
 
 ### Changed
