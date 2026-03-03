@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Use latest dist-tag for all npm publishes
+
 ## [0.1.14] - 2026-03-03
 
 ### Changed
