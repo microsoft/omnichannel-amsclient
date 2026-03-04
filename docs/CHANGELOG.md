@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Changed
+### Fixed
 
-- Use latest dist-tag for all npm publishes
+- Fix npm publish failing for prerelease versions by adding `--tag latest` to publish command
 
 ## [0.1.14] - 2026-03-03
 
