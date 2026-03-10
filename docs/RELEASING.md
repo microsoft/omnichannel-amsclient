@@ -67,6 +67,46 @@ npm view @microsoft/omnichannel-amsclient@main version
 | `v*` (e.g. `v0.1.15`) | Release version from `package.json` | `latest` |
 | Push to `main` | Dev version `X.Y.Z-main.<sha>` | `main` |
 
+### Hotfix Versions
+
+For urgent fixes that need to ship against an older release (not `main`), use a hotfix branch:
+
+1. **Create a hotfix branch** from the target commit:
+   ```bash
+   git checkout -b hotfix/<name> <base-commit-sha>
+   ```
+
+2. **Set the version** in `package.json` using prerelease format:
+   ```
+   "version": "0.1.12-hotfix.<name>.1"
+   ```
+
+3. **Apply the fix**.
+
+4. **Commit and push** the hotfix branch to the upstream repo:
+   ```bash
+   git push upstream hotfix/<name>
+   ```
+
+5. The `npm-release.yml` workflow triggers on `hotfix/**` branches. On hotfix branches, `version-from-git` is **skipped** — the version in `package.json` is used as-is. The npm dist-tag is `hotfix` (not `latest`).
+
+6. **Verify the publish**:
+   ```bash
+   npm view @microsoft/omnichannel-amsclient@0.1.12-hotfix.<name>.1
+   ```
+
+#### Hotfix Version Naming Convention
+
+```
+<base-version>-hotfix.<descriptor>.<iteration>
+```
+
+- `base-version`: The version the hotfix is based on (e.g., `0.1.12`)
+- `descriptor`: Short kebab-case name for the fix (e.g., `enau`)
+- `iteration`: Increment if multiple attempts are needed (start at `1`)
+
+Example: `0.1.12-hotfix.enau.1`
+
 ### Important Notes
 
 - **Burned versions**: If a publish fails, that version number is consumed by npm. You must bump to the next version.
