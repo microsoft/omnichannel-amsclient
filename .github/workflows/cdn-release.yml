@@ -17,6 +17,7 @@ env:
 
 jobs:
   cdn-upload:
+    if: github.repository == 'microsoft/omnichannel-amsclient'
     environment: Production
     runs-on: ubuntu-latest
     steps:
