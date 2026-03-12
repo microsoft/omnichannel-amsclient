@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Add `github.repository` guard to release workflows to prevent them from running on forks
+
 ### Fixed
 
 - Fix npm publish failing for prerelease versions by adding `--tag latest` to publish command
