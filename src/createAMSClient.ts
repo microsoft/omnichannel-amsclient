@@ -3,6 +3,7 @@ import FramedClient from "./FramedClient";
 import FramedlessClient from "./FramedlessClient";
 import GlobalConfiguration from "./GlobalConfiguration";
 import PluggableLogger from "./PluggableLogger";
+import { isSafariOrIOSWebView } from "./utils/platform";
 
 interface AMSConfig {
     framedMode: boolean,
@@ -13,25 +14,40 @@ interface AMSConfig {
     baseUrl?: string
 }
 
+const applyGlobalConfig = (client: FramedClient | FramedlessClient, config: AMSConfig): void => {
+    config.debug && client.setDebug(config.debug || false);
+    GlobalConfiguration.debug = config.debug || false;
+    GlobalConfiguration.silentError = config.silentError || true;
+};
+
 const createAMSClient = async (config: AMSConfig): Promise<FramedClient | FramedlessClient> => {
-
-    (config as AMSConfig).debug && console.log(`[createAMSClient] ${config.framedMode? 'FramedClient': 'FramedlessClient'}`);
-    (config as AMSConfig).debug && console.time("createAMSClient");
-
     const logger = new AMSLogger(config.logger);
-    const framedClientConfig = {
-        multiClient: config.multiClient || false,
-        baseUrl: config.baseUrl || "",
-    };
+    const useFramed = config.framedMode && !isSafariOrIOSWebView();
 
-    const client = config.framedMode? new FramedClient(logger, framedClientConfig): new FramedlessClient(logger);
+    config.debug && console.log(`[createAMSClient] ${useFramed ? 'FramedClient' : 'FramedlessClient'}${config.framedMode && !useFramed ? ' (Safari/iOS fallback)' : ''}`);
+    config.debug && console.time("createAMSClient");
+
+    if (useFramed) {
+        try {
+            const framedClientConfig = {
+                multiClient: config.multiClient || false,
+                baseUrl: config.baseUrl || "",
+            };
+            const client = new FramedClient(logger, framedClientConfig);
+            await client.setup();
+            applyGlobalConfig(client, config);
+            config.debug && console.timeEnd("createAMSClient");
+            return client;
+        } catch (error) {
+            config.debug && console.warn('[createAMSClient] FramedClient setup failed, falling back to FramedlessClient:', error);
+            // Fall through to FramedlessClient
+        }
+    }
+
+    const client = new FramedlessClient(logger);
     await client.setup();
-
-    (config as AMSConfig).debug && client.setDebug((config as AMSConfig).debug || false);
-    GlobalConfiguration.debug = (config as AMSConfig).debug || false;
-    GlobalConfiguration.silentError = (config as AMSConfig).silentError || true;
-
-    (config as AMSConfig).debug && console.timeEnd("createAMSClient");
+    applyGlobalConfig(client, config);
+    config.debug && console.timeEnd("createAMSClient");
     return client;
 }
 

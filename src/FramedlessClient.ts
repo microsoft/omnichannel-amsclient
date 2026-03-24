@@ -8,7 +8,7 @@ import FileMetadata from "./FileMetadata";
 import InitConfig from "./InitConfig";
 import OmnichannelChatToken from "./OmnichannelChatToken";
 import PostMessageEventName from "./PostMessageEventName";
-import platform from "./utils/platform";
+
 import ScenarioMarker from "./telemetry/ScenarioMarker";
 import { uuidv4 } from "./utils/uuid";
 import extractFileExtension from "./utils/extractFileExtension";
@@ -24,10 +24,6 @@ class FramedlessClient {
         this.runtimeId = uuidv4();
         this.debug = false;
         this.logger = logger;
-
-        if (platform.isBrowser()) {
-            console.error('FramedMode should be used on Web platform');
-        }
 
         if (logger) {
             this.scenarioMarker = new ScenarioMarker(logger);
