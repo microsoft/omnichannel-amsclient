@@ -342,6 +342,8 @@ class FramedClient {
     }
 
     private async loadIframe(): Promise<void> {
+        const IFRAME_LOAD_TIMEOUT_MS = 10000;
+
         return new Promise((resolve, reject) => {
             this.scenarioMarker?.startScenario(FramedClientEventName.LoadIframe, {
                 AMSClientRuntimeId: this.runtimeId
@@ -369,14 +371,30 @@ class FramedClient {
                 return;
             }
             // at this point, is assured that the iframe is not loaded yet, so we can proceed to load it
-            /* istanbul ignore next */            
+            /* istanbul ignore next */
             const iframeElement: HTMLIFrameElement = document.createElement('iframe');
             iframeElement.id = this.iframeId;
             iframeElement.src = `${this.baseUrl}/${version}/iframe.html?clientId=${this.clientId}&debug=${this.debug}&telemetry=true`;
             //controlling iframe state to prevent clashing calls
             this.loadIframeState = LoadIframeState.Loading;
 
+            // Safety net: reject if iframe doesn't fire load or error (e.g., blocked by browser policies)
+            const timeoutId = setTimeout(() => {
+                this.loadIframeState = LoadIframeState.Failed;
+                const exceptionDetails = {
+                    Reason: 'LoadIframeTimeout',
+                    Message: `Iframe did not load within ${IFRAME_LOAD_TIMEOUT_MS}ms`
+                };
+                this.scenarioMarker?.failScenario(FramedClientEventName.LoadIframe, {
+                    AMSClientRuntimeId: this.runtimeId,
+                    ExceptionDetails: JSON.stringify(exceptionDetails)
+                });
+                iframeElement.remove();
+                reject(new Error(exceptionDetails.Message));
+            }, IFRAME_LOAD_TIMEOUT_MS);
+
             iframeElement.addEventListener('load', () => {
+                clearTimeout(timeoutId);
                 /* istanbul ignore next */
                 this.debug && console.log('iframe loaded!');
                 this.loadIframeState = LoadIframeState.Loaded;
@@ -387,11 +405,13 @@ class FramedClient {
             });
 
             iframeElement.addEventListener('error', () => {
+                clearTimeout(timeoutId);
                 this.loadIframeState = LoadIframeState.Failed;
                 this.scenarioMarker?.failScenario(FramedClientEventName.LoadIframe, {
                     AMSClientRuntimeId: this.runtimeId
                 });
-                reject();
+                iframeElement.remove();
+                reject(new Error('Iframe load failed'));
             });
             document.head.append(iframeElement);
             this.debug && console.timeEnd('ams:loadIframe');
