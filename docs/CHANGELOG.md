@@ -12,6 +12,16 @@ All notable changes to this project will be documented in this file.
 
 - Fix npm publish failing for prerelease versions by adding `--tag latest` to publish command
 
+## [0.1.14-hotfix.safari-iframe.1] - 2026-03-24
+
+### Fixed
+
+- Fix Safari/iOS infinite hang during AMS client initialization caused by cross-origin iframe blocked by ITP
+- Add `isSafariOrIOSWebView()` detection — skips iframe entirely on Safari/iOS, uses FramedlessClient directly (zero delay)
+- Add 10s timeout safety net to `FramedClient.loadIframe()` for other browsers that may block iframes
+- Clean up orphaned iframe elements on timeout/error
+- Remove misleading `console.error` in FramedlessClient when used as browser fallback
+
 ## [0.1.14] - 2026-03-03
 
 ### Changed
