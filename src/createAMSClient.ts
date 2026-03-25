@@ -3,7 +3,11 @@ import FramedClient from "./FramedClient";
 import FramedlessClient from "./FramedlessClient";
 import GlobalConfiguration from "./GlobalConfiguration";
 import PluggableLogger from "./PluggableLogger";
-import { isSafariOrIOSWebView } from "./utils/platform";
+import { isBrowser, isSafariOrIOSWebView } from "./utils/platform";
+
+// Public CDN fallback for npm consumers who don't host iframe.html themselves.
+// The iframe runs on the CDN origin, so its fetch calls to AMS avoid CORS issues.
+const AMS_CDN_FALLBACK_URL = "https://oc-cdn-public.azureedge.net/livechatwidget/v2scripts/ams";
 
 interface AMSConfig {
     framedMode: boolean,
@@ -22,17 +26,17 @@ const applyGlobalConfig = (client: FramedClient | FramedlessClient, config: AMSC
 
 const createAMSClient = async (config: AMSConfig): Promise<FramedClient | FramedlessClient> => {
     const logger = new AMSLogger(config.logger);
-    const hasValidBaseUrl = !!config.baseUrl && config.baseUrl.startsWith('http');
-    const useFramed = config.framedMode && !isSafariOrIOSWebView() && hasValidBaseUrl;
+    const useFramed = config.framedMode && !isSafariOrIOSWebView() && isBrowser();
+    const resolvedBaseUrl = config.baseUrl || (useFramed ? AMS_CDN_FALLBACK_URL : "");
 
-    config.debug && console.log(`[createAMSClient] ${useFramed ? 'FramedClient' : 'FramedlessClient'}${config.framedMode && !useFramed ? ` (fallback: ${!hasValidBaseUrl ? 'no baseUrl' : 'Safari/iOS'})` : ''}`);
+    config.debug && console.log(`[createAMSClient] ${useFramed ? 'FramedClient' : 'FramedlessClient'}${config.framedMode && !useFramed ? ' (Safari/iOS fallback)' : ''}${useFramed && !config.baseUrl ? ' (CDN fallback)' : ''}`);
     config.debug && console.time("createAMSClient");
 
     if (useFramed) {
         try {
             const framedClientConfig = {
                 multiClient: config.multiClient || false,
-                baseUrl: config.baseUrl || "",
+                baseUrl: resolvedBaseUrl,
             };
             const client = new FramedClient(logger, framedClientConfig);
             await client.setup();
