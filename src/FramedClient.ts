@@ -395,31 +395,6 @@ class FramedClient {
 
             iframeElement.addEventListener('load', () => {
                 clearTimeout(timeoutId);
-
-                // Detect failed loads: browsers show error pages (chrome-error://, about:blank)
-                // that still fire 'load'. Check if the iframe loaded real content.
-                try {
-                    const iframeDoc = iframeElement.contentDocument || iframeElement.contentWindow?.document;
-                    const iframeUrl = iframeDoc?.location?.href;
-                    if (!iframeUrl || iframeUrl === 'about:blank' || !iframeUrl.startsWith('http')) {
-                        this.loadIframeState = LoadIframeState.Failed;
-                        const exceptionDetails = {
-                            Reason: 'LoadIframeInvalidContent',
-                            Message: `Iframe loaded error page (${iframeUrl || 'null'})`
-                        };
-                        this.scenarioMarker?.failScenario(FramedClientEventName.LoadIframe, {
-                            AMSClientRuntimeId: this.runtimeId,
-                            ExceptionDetails: JSON.stringify(exceptionDetails)
-                        });
-                        iframeElement.remove();
-                        reject(new Error(exceptionDetails.Message));
-                        return;
-                    }
-                } catch {
-                    // Cross-origin access throws — expected for a valid cross-origin AMS iframe.
-                    // Same-origin error pages are readable, so a throw means the real page loaded.
-                }
-
                 /* istanbul ignore next */
                 this.debug && console.log('iframe loaded!');
                 this.loadIframeState = LoadIframeState.Loaded;
