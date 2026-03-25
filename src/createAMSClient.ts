@@ -22,9 +22,10 @@ const applyGlobalConfig = (client: FramedClient | FramedlessClient, config: AMSC
 
 const createAMSClient = async (config: AMSConfig): Promise<FramedClient | FramedlessClient> => {
     const logger = new AMSLogger(config.logger);
-    const useFramed = config.framedMode && !isSafariOrIOSWebView();
+    const hasValidBaseUrl = !!config.baseUrl && config.baseUrl.startsWith('http');
+    const useFramed = config.framedMode && !isSafariOrIOSWebView() && hasValidBaseUrl;
 
-    config.debug && console.log(`[createAMSClient] ${useFramed ? 'FramedClient' : 'FramedlessClient'}${config.framedMode && !useFramed ? ' (Safari/iOS fallback)' : ''}`);
+    config.debug && console.log(`[createAMSClient] ${useFramed ? 'FramedClient' : 'FramedlessClient'}${config.framedMode && !useFramed ? ` (fallback: ${!hasValidBaseUrl ? 'no baseUrl' : 'Safari/iOS'})` : ''}`);
     config.debug && console.time("createAMSClient");
 
     if (useFramed) {
