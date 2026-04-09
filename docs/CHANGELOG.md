@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fix npm publish failing for prerelease versions by adding `--tag latest` to publish command
+- Remove `npm install -g npm@latest` from npm-release workflow that broke OIDC trusted publishing
 
 ## [0.1.14] - 2026-03-03
 
