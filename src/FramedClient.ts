@@ -29,7 +29,7 @@ interface RequestCallback {
     reject: CallableFunction
 }
 
-const version = sdkVersion || 'latest';
+const version = sdkVersion;
 
 const iframePrefix = 'Microsoft_Omnichannel_AMSClient_Iframe_Window';
 
