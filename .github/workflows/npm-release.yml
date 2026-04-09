@@ -37,9 +37,6 @@ jobs:
           echo "name=$(jq -r '.name' package.json)" >> "$GITHUB_OUTPUT"
           echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
-      - name: Upgrade npm for OIDC trusted publishing
-        run: npm install -g npm@latest
-
       - name: Install packages
         run: npm install
 
@@ -56,4 +53,4 @@ jobs:
           fi
 
       - name: Publish ${{ steps.read-package-json.outputs.name }}@${{ steps.read-package-json.outputs.version }}
-        run: npm publish --provenance --tag ${{ steps.dist-tag.outputs.tag }} --access public
+        run: npx npm@11.12.1 publish --provenance --tag ${{ steps.dist-tag.outputs.tag }} --access public
