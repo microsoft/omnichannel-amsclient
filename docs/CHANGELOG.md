@@ -4,8 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+
+- Refreshed the Babel 7 transitive pins and raised the Lodash override to 4.18.1.
+
 ### Changed
 
+- Standardized local development on Node.js 22.
 - Add `github.repository` guard to release workflows to prevent them from running on forks
 
 ### Fixed
