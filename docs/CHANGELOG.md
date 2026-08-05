@@ -4,13 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Security
-
-- Refreshed the Babel 7 transitive pins and raised the Lodash override to 4.18.1.
-
 ### Changed
 
-- Standardized local development on Node.js 22.
+- Refreshed Babel 7 and Lodash development-toolchain pins to clear dev-only audit findings; published `lib/` output is unchanged.
+- Scoped the development overrides to Jest and ts-jest and removed the unused `@babel/runtime-corejs3` override.
+- Standardized local, pull-request, and release builds on Node.js 22 and declared Node.js `>=22.12.0` as the supported runtime.
 - Add `github.repository` guard to release workflows to prevent them from running on forks
 
 ### Fixed
