@@ -114,7 +114,7 @@ jobs:
             flag && /^## \[/ {flag=0}
             flag {print}
           ' docs/CHANGELOG.md > RELEASE_NOTES.md
-          if [ ! -s RELEASE_NOTES.md ]; then
+          if ! grep -q '[^[:space:]]' RELEASE_NOTES.md; then
             echo "::warning::No CHANGELOG entry found for version $VERSION; falling back to auto-generated notes."
             echo "fallback=true" >> "$GITHUB_OUTPUT"
           else
