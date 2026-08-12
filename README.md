@@ -1,7 +1,8 @@
 # Omnichannel AMSClient
 
 [![npm version](https://badge.fury.io/js/%40microsoft%2Fomnichannel-amsclient.svg)](https://badge.fury.io/js/%40microsoft%2Fomnichannel-amsclient)
-![Release CI](https://github.com/microsoft/omnichannel-amsclient/workflows/Release%20CI/badge.svg)
+[![npm Release](https://github.com/microsoft/omnichannel-amsclient/actions/workflows/npm-release.yml/badge.svg)](https://github.com/microsoft/omnichannel-amsclient/actions/workflows/npm-release.yml)
+[![CDN Release](https://github.com/microsoft/omnichannel-amsclient/actions/workflows/cdn-release.yml/badge.svg)](https://github.com/microsoft/omnichannel-amsclient/actions/workflows/cdn-release.yml)
 
 TypeScript client for Microsoft Azure Messaging Services (AMS) APIs. Handles file uploads and downloads in Omnichannel conversations. Compatible with Web (browser), Node.js, and React Native.
 
@@ -18,6 +19,7 @@ TypeScript client for Microsoft Azure Messaging Services (AMS) APIs. Handles fil
 - [File Download Flow](#file-download-flow)
 - [Telemetry](#telemetry)
 - [Development](#development)
+- [Releasing](#releasing)
 - [Contributing](#contributing)
 
 ## Installation
@@ -217,8 +219,14 @@ npm run lint               # ESLint
 ### CI
 
 - **Pull Request**: Build + test + lint (GitHub Actions, Node 22)
-- **Release**: Build CDN + npm package, upload to Azure Blob Storage, publish to npm registry
+- **npm Release**: Publish main builds and official releases to npm with provenance
+- **GitHub Release**: Create release notes and attach the published npm tarball for official `v*` tags
+- **CDN Release**: Upload versioned and `latest` bundles to Azure Blob Storage
 - **Azure Pipelines**: Component Governance scan
+
+## Releasing
+
+See [docs/RELEASING.md](docs/RELEASING.md) for development builds, official npm and GitHub releases, CDN publishing, and hotfixes.
 
 ## Contributing
 
