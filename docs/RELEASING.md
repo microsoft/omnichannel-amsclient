@@ -20,43 +20,76 @@ Every push to `main` automatically publishes a dev version to npm:
 
 The workflow intentionally moves `latest` to each `main` prerelease. An unqualified install (`npm install @microsoft/omnichannel-amsclient`) can receive a prerelease. There is no `@main` dist-tag — the workflow does not create one.
 
-### Release Versions (Manual — Tag Push)
+### Official Releases (Release PR and Tag)
 
-To publish release version `0.2.0`:
+Use an approved semantic version. In the examples below, replace `0.2.1` and `81` with the new version and pull-request number.
 
-1. **Make sure that `package.json` and `package-lock.json` contain `0.2.0`.**
+```bash
+VERSION=0.2.1
+PR_NUMBER=81
+```
 
-   These files already contain `0.2.0` for this release. If the files contain another version, run:
+1. **Create a release branch from current `upstream/main`.**
 
    ```bash
-   npm version 0.2.0 --no-git-tag-version
+   git fetch upstream
+   git checkout -b "release/v$VERSION" upstream/main
    ```
 
-2. **Update `docs/CHANGELOG.md`.**
+2. **Set the version in `package.json` and `package-lock.json`.**
 
-   Move the release entries to `## [0.2.0] - YYYY-MM-DD`. Keep a new `## [Unreleased]` section above the release.
-
-3. **Open a pull request** with the version and changelog changes. Merge it after all required checks pass.
-
-4. **Update the local `main` branch**:
    ```bash
-   git checkout main
-   git pull --ff-only upstream main
+   npm version "$VERSION" --no-git-tag-version
    ```
 
-5. **Create and push the release tag**:
+3. **Finalize `docs/CHANGELOG.md`.**
+
+   Move all release entries below `## [$VERSION] - YYYY-MM-DD`. Keep a new `## [Unreleased]` section above that heading.
+
+4. **Open a pull request.**
+
+   Include `package.json`, `package-lock.json`, and `docs/CHANGELOG.md`. Merge the pull request only after all required checks pass.
+
+   The merge to `main` publishes a `VERSION-main.SHA` prerelease with the npm `latest` dist-tag. This publish is expected.
+
+5. **Get the pull-request merge commit.**
+
    ```bash
-   git tag v0.2.0
-   git push upstream v0.2.0
+   MERGE_SHA=$(gh pr view "$PR_NUMBER" --repo microsoft/omnichannel-amsclient --json mergeCommit --jq '.mergeCommit.oid')
+   test -n "$MERGE_SHA"
    ```
 
-   The tag must equal `v` plus the version in `package.json`.
+6. **Create an annotated tag on that merge commit.**
 
-6. **Wait for the `npm Release` workflow.**
+   ```bash
+   git fetch upstream --tags
+   git tag -a "v$VERSION" "$MERGE_SHA" -m "Release v$VERSION"
+   git push upstream "v$VERSION"
+   ```
 
-The workflow makes sure that the tag matches the package version. Then it builds and publishes the package with `--tag latest`.
+   The tag must equal `v` plus the version in `package.json`. The workflow rejects mismatched tags and prerelease tags.
 
-The workflow also adds a provenance attestation on npmjs.com. It creates GitHub Release `v0.2.0` with notes and the npm `.tgz` file.
+7. **Wait for the tag workflows.**
+
+Do not use **Run workflow** for an official release. The pushed tag starts the npm and CDN workflows.
+
+The npm workflow publishes the package with `--tag latest`. Then it creates GitHub Release `v$VERSION` with notes and the published npm tarball.
+
+### GitHub Release Notes
+
+The workflow removes `v` from the tag. For example, it converts `v0.2.1` to `0.2.1`.
+
+It finds `## [0.2.1]` in `docs/CHANGELOG.md`. It copies that section until the next `## [` version heading.
+
+The copied text becomes the GitHub Release body. If the matching section is empty or absent, GitHub generates notes from merged pull requests.
+
+The workflow packs the package once. It publishes that `.tgz` file to npm and attaches the same file to the GitHub Release.
+
+### CDN Release
+
+The `CDN Release` workflow also starts from the `v*` tag. It uploads the versioned bundle and updates the Production `latest` bundle.
+
+Before tag creation, make sure that the Production environment and Azure Storage secrets are available.
 
 ### Verifying a Publish
 
@@ -68,20 +101,23 @@ npm view @microsoft/omnichannel-amsclient version
 npm view @microsoft/omnichannel-amsclient dist-tags
 
 # Check the official version
-npm view @microsoft/omnichannel-amsclient@0.2.0 version
+npm view "@microsoft/omnichannel-amsclient@$VERSION" version
 
 # Check a specific dev version
 npm view @microsoft/omnichannel-amsclient@0.2.0-main.abc1234 version
 
 # Check the GitHub Release and its asset
-gh release view v0.2.0 --repo microsoft/omnichannel-amsclient
+gh release view "v$VERSION" --repo microsoft/omnichannel-amsclient
+
+# Check the versioned CDN bundle
+curl -I "https://comms.omnichannelengagementhub.com/ams/$VERSION/iframe.html"
 ```
 
 ### Tag Format
 
 | Tag pattern | What publishes | npm dist-tag |
 |-------------|---------------|--------------|
-| `v*` (e.g. `v0.2.0`) | Release version from `package.json` | `latest` |
+| `v*` (e.g. `v0.2.1`) | Release version from `package.json` | `latest` |
 | Push to `main` | Dev version `X.Y.Z-main.<sha>` | `latest` |
 
 ### Hotfix Versions
