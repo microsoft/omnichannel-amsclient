@@ -9,63 +9,80 @@ This package uses **GitHub Actions OIDC trusted publishing** — no npm tokens o
 Every push to `main` automatically publishes a dev version to npm:
 
 ```
-0.1.14-main.abc1234
-       ^^^^^^^^^^^^
-       branch + short commit SHA (via version-from-git)
+0.2.0-main.abc1234
+      ^^^^^^^^^^^^
+      branch + short commit SHA (via version-from-git)
 ```
 
-- **npm tag**: `main` (not `latest`)
-- **Install**: `npm install @microsoft/omnichannel-amsclient@main`
+- **npm dist-tag**: `latest`
+- **Install**: Use the exact version from the workflow output, such as `npm install @microsoft/omnichannel-amsclient@0.2.0-main.abc1234`
 - **Triggered by**: Any merge/push to the `main` branch
+
+The workflow intentionally moves `latest` to each `main` prerelease. An unqualified install (`npm install @microsoft/omnichannel-amsclient`) can receive a prerelease. There is no `@main` dist-tag — the workflow does not create one.
 
 ### Release Versions (Manual — Tag Push)
 
-To publish a release version (e.g. `0.1.15`):
+To publish release version `0.2.0`:
 
-1. **Update the version** in `package.json`:
+1. **Make sure that `package.json` and `package-lock.json` contain `0.2.0`.**
+
+   These files already contain `0.2.0` for this release. If the files contain another version, run:
+
    ```bash
-   # Edit package.json version field to the new version
+   npm version 0.2.0 --no-git-tag-version
    ```
 
-2. **Update the changelog** in `docs/CHANGELOG.md`
+2. **Update `docs/CHANGELOG.md`.**
 
-3. **Commit and push** to main:
+   Move the release entries to `## [0.2.0] - YYYY-MM-DD`. Keep a new `## [Unreleased]` section above the release.
+
+3. **Open a pull request** with the version and changelog changes. Merge it after all required checks pass.
+
+4. **Update the local `main` branch**:
    ```bash
-   git add package.json docs/CHANGELOG.md
-   git commit -m "Bump version to 0.1.15"
-   git push
+   git checkout main
+   git pull --ff-only upstream main
    ```
 
-4. **Create and push a tag**:
+5. **Create and push the release tag**:
    ```bash
-   git tag v0.1.15
-   git push origin v0.1.15
+   git tag v0.2.0
+   git push upstream v0.2.0
    ```
 
-5. The `npm-release.yml` workflow will:
-   - Build the package (`npm run build:tsc`)
-   - Publish to npm with `--tag latest`
-   - Include provenance attestation (visible on npmjs.com)
+   The tag must equal `v` plus the version in `package.json`.
+
+6. **Wait for the `npm Release` workflow.**
+
+The workflow makes sure that the tag matches the package version. Then it builds and publishes the package with `--tag latest`.
+
+The workflow also adds a provenance attestation on npmjs.com. It creates GitHub Release `v0.2.0` with notes and the npm `.tgz` file.
 
 ### Verifying a Publish
 
 ```bash
-# Check latest release version
+# Read the version selected by latest
 npm view @microsoft/omnichannel-amsclient version
 
-# Check all dist-tags (latest + main)
+# Read all dist-tags
 npm view @microsoft/omnichannel-amsclient dist-tags
 
+# Check the official version
+npm view @microsoft/omnichannel-amsclient@0.2.0 version
+
 # Check a specific dev version
-npm view @microsoft/omnichannel-amsclient@main version
+npm view @microsoft/omnichannel-amsclient@0.2.0-main.abc1234 version
+
+# Check the GitHub Release and its asset
+gh release view v0.2.0 --repo microsoft/omnichannel-amsclient
 ```
 
 ### Tag Format
 
 | Tag pattern | What publishes | npm dist-tag |
 |-------------|---------------|--------------|
-| `v*` (e.g. `v0.1.15`) | Release version from `package.json` | `latest` |
-| Push to `main` | Dev version `X.Y.Z-main.<sha>` | `main` |
+| `v*` (e.g. `v0.2.0`) | Release version from `package.json` | `latest` |
+| Push to `main` | Dev version `X.Y.Z-main.<sha>` | `latest` |
 
 ### Hotfix Versions
 
@@ -95,6 +112,8 @@ For urgent fixes that need to ship against an older release (not `main`), use a 
    npm view @microsoft/omnichannel-amsclient@0.1.12-hotfix.<name>.1
    ```
 
+Do not create a `v*` tag for a hotfix prerelease. The workflow rejects prerelease tags to protect the `latest` dist-tag.
+
 #### Hotfix Version Naming Convention
 
 ```
@@ -109,6 +128,8 @@ Example: `0.1.12-hotfix.enau.1`
 
 ### Important Notes
 
-- **Burned versions**: If a publish fails, that version number is consumed by npm. You must bump to the next version.
+- **Published versions**: npm does not permit a second publish of the same version. Use a new version after npm accepts a bad publish.
 - **Trusted publisher**: Configured on npmjs.com to trust `microsoft/omnichannel-amsclient` → `npm-release.yml`. No npm tokens needed.
 - **Provenance**: All publishes include a signed provenance statement verifiable on npmjs.com.
+- **Release notes**: A matching changelog section supplies the GitHub Release notes. GitHub generates notes when the section is absent.
+- **Release asset**: Each GitHub Release contains the npm `.tgz` file from `npm pack`.
