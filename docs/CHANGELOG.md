@@ -4,8 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-12
+
 ### Changed
 
+- Added automatic GitHub Releases with changelog notes and the npm tarball for `v*` tags.
+- Documented that automatic `main` prereleases and official releases both use the npm `latest` dist-tag.
 - Refreshed Babel 7 and Lodash development-toolchain pins to clear dev-only audit findings; published `lib/` output is unchanged.
 - Scoped the development overrides to Jest and ts-jest and removed the unused `@babel/runtime-corejs3` override.
 - Standardized local, pull-request, and release builds on Node.js 22 and declared Node.js `>=22.12.0` as the supported runtime.
