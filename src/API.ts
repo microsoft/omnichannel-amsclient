@@ -166,7 +166,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
     patchChatToken(chatToken);
 
     const typeObject = defineTypeForOperation(file.type, AmsApiOperation.Upload, supportedImagesMimeTypes);
-    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${documentId}/content/${typeObject}`;
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${encodeURIComponent(documentId)}/content/${typeObject}`;
     const headers = {
         ...createDefaultHeaders(chatToken.token),
         [HeadersName.ContentType]: MIMEType.applicationFormUrlEncoded
@@ -205,7 +205,7 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
 
     patchChatToken(chatToken);
 
-    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${fileMetadata.id}/views/${defineSupportedImagesMimeTypes(supportedImagesMimeTypes).includes(fileMetadata.type) ? 'imgpsh_fullsize_anim' : 'original'}/status`;
+    const url = `${chatToken.amsEndpoint || chatToken?.regionGTMS?.ams}/v1/objects/${encodeURIComponent(fileMetadata.id)}/views/${defineSupportedImagesMimeTypes(supportedImagesMimeTypes).includes(fileMetadata.type) ? 'imgpsh_fullsize_anim' : 'original'}/status`;
 
     const headers = createDefaultHeaders(chatToken.token);
 
