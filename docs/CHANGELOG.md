@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Release builds use lockfile-only installation and local version preparation; only the separate tarball-publishing job receives OIDC permission.
+
 ## [0.2.0] - 2026-08-12
 
 ### Changed
