@@ -4,6 +4,7 @@
 
 import FramedClient, { LoadIframeState } from "../src/FramedClient";
 import PostMessageEventName from "../src/PostMessageEventName";
+import PostMessageEventStatus from "../src/PostMessageEventStatus";
 import PostMessageEventType from "../src/PostMessageEventType";
 import platform from "../src/utils/platform";
 
@@ -92,6 +93,10 @@ describe('FramedClient', () => {
         client.postMessage(PostMessageEventType.None, PostMessageEventName.SkypeTokenAuth, {}, () => {}, () => {});
 
         expect((client as any).targetWindow.postMessage).toHaveBeenCalledTimes(1);
+        expect((client as any).targetWindow.postMessage).toHaveBeenCalledWith(
+            expect.objectContaining({ replyOnFailure: true }),
+            expect.any(String)
+        );
     });
 
     it('FramedClient.dispose() should clean up', async () => {
@@ -102,5 +107,85 @@ describe('FramedClient', () => {
         client.dispose();
 
         expect((client as any).loadIframeState).toBe(LoadIframeState.NotLoaded);
+    });
+    describe('handleEvent() responses', () => {
+        const respond = async (client: FramedClient, eventName: PostMessageEventName, data: Record<string, unknown>) => {
+            await client.handleEvent({
+                origin: window.location.origin,
+                source: null,
+                data: { clientId: (client as any).clientId, eventType: PostMessageEventType.Response, eventName, requestId: 'requestId', ...data }
+            } as any);
+        };
+
+        const operations: [string, PostMessageEventName][] = [
+            ['createObject', PostMessageEventName.CreateObject],
+            ['uploadDocument', PostMessageEventName.UploadDocument],
+            ['getViewStatus', PostMessageEventName.GetViewStatus],
+            ['getView', PostMessageEventName.GetView]
+        ];
+
+        it.each(operations)('%s success should resolve with the response', async (_operation, eventName) => {
+            const client = new FramedClient();
+            const resolve = jest.fn();
+            const reject = jest.fn();
+            (client as any).requestCallbacks = { requestId: { resolve, reject } };
+
+            await respond(client, eventName, { eventStatus: PostMessageEventStatus.Success, response: { id: 'id' } });
+
+            expect(resolve).toHaveBeenCalledWith({ id: 'id' });
+            expect(reject).not.toHaveBeenCalled();
+            expect((client as any).requestCallbacks).toEqual({});
+        });
+
+        it.each(operations)('%s failure should reject with the operation message and status', async (operation, eventName) => {
+            const client = new FramedClient();
+            const resolve = jest.fn();
+            const reject = jest.fn();
+            (client as any).requestCallbacks = { requestId: { resolve, reject } };
+
+            await respond(client, eventName, { eventStatus: PostMessageEventStatus.Failure, error: { message: 'AMS failed: 401 Unauthorized', status: 401 } });
+
+            expect(resolve).not.toHaveBeenCalled();
+            expect(reject).toHaveBeenCalledTimes(1);
+            expect(reject.mock.calls[0][0]).toBeInstanceOf(Error);
+            expect(reject.mock.calls[0][0]).toMatchObject({ message: operation, status: 401 });
+            expect((client as any).requestCallbacks).toEqual({});
+        });
+
+        it.each(operations.slice(0, 2))('%s failure from an older iframe without error details should still reject', async (operation, eventName) => {
+            const client = new FramedClient();
+            const reject = jest.fn();
+            (client as any).requestCallbacks = { requestId: { resolve: jest.fn(), reject } };
+
+            await respond(client, eventName, { eventStatus: PostMessageEventStatus.Failure });
+
+            expect(reject.mock.calls[0][0]).toMatchObject({ message: operation });
+            expect(reject.mock.calls[0][0].status).toBeUndefined();
+        });
+
+        it.each(operations.slice(2))('%s failure from an older iframe without requestId cannot settle the request', async (_operation, eventName) => {
+            const client = new FramedClient();
+            const resolve = jest.fn();
+            const reject = jest.fn();
+            (client as any).requestCallbacks = { requestId: { resolve, reject } };
+
+            await respond(client, eventName, { eventStatus: PostMessageEventStatus.Failure, requestId: undefined });
+
+            expect(resolve).not.toHaveBeenCalled();
+            expect(reject).not.toHaveBeenCalled();
+            expect((client as any).requestCallbacks).toHaveProperty('requestId');
+        });
+
+        it('skypeTokenAuth failure should still resolve', async () => {
+            const client = new FramedClient();
+            const resolve = jest.fn();
+            const reject = jest.fn();
+            (client as any).requestCallbacks = { requestId: { resolve, reject } };
+
+            await respond(client, PostMessageEventName.SkypeTokenAuth, { eventStatus: PostMessageEventStatus.Failure, error: { status: 401 } });
+
+            expect(resolve).toHaveBeenCalledTimes(1);
+            expect(reject).not.toHaveBeenCalled();
+        });
     });
 });

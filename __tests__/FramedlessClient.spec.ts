@@ -4,6 +4,8 @@
 
 import API from "../src/API";
 import FramedlessClient from "../src/FramedlessClient";
+import { AMSError } from "../src/AMSError";
+import { AMSOperationError } from "../src/AMSOperationError";
 
 describe('FramedlessClient', () => {
     let consoleErrorSpy: jest.SpyInstance;
@@ -283,5 +285,31 @@ describe('FramedlessClient', () => {
         } catch (error) {
             expect(error).not.toBe(undefined);
         }
+    });
+    describe('HTTP status on failure', () => {
+        const token = { chatId: 'chatId', token: 'token' };
+        const fileMetadata = { fileSharingProtocolType: 0, id: 'id', name: 'name.txt', size: 0, type: 'text/plain', url: 'url' };
+        const file = new File([""], "filename.txt", { type: 'text/plain' });
+        const cases: [string, keyof typeof API, (client: FramedlessClient) => Promise<unknown>][] = [
+            ['skypeTokenAuth', 'skypeTokenAuth', (client) => client.skypeTokenAuth(token)],
+            ['createObject', 'createObject', (client) => client.createObject('id', file, token)],
+            ['uploadDocument', 'uploadDocument', (client) => client.uploadDocument('id', file, token)],
+            ['getViewStatus', 'getViewStatus', (client) => client.getViewStatus(fileMetadata, token)],
+            ['getView', 'getView', (client) => client.getView(fileMetadata, 'viewLocation', token)]
+        ];
+
+        it.each(cases)('FramedlessClient.%s() should keep the operation message and expose status', async (operation, apiName, call) => {
+            jest.spyOn(API, apiName).mockRejectedValue(new AMSError('AMS failed: 401 Unauthorized', 'https://ams/v1/objects', undefined, 401));
+
+            await expect(call(new FramedlessClient())).rejects.toMatchObject({ message: operation, status: 401, requestUrl: 'https://ams/v1/objects' });
+        });
+
+        it.each(cases)('FramedlessClient.%s() should not set status when no HTTP response was received', async (operation, apiName, call) => {
+            jest.spyOn(API, apiName).mockRejectedValue(new Error('network'));
+
+            const error = await call(new FramedlessClient()).catch((e: AMSOperationError) => e) as AMSOperationError;
+            expect(error.message).toBe(operation);
+            expect(error.status).toBeUndefined();
+        });
     });
 });

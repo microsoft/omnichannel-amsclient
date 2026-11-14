@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Expose the AMS HTTP status code on failed operations. `createObject`, `uploadDocument`, `getViewStatus` and `getView` errors now carry `status` (for example `401`) in both framed and framedless modes, and `skypeTokenAuth` errors carry it in framedless mode, so callers can detect an expired token and retry. In framed mode `skypeTokenAuth` still resolves on failure. Error messages are unchanged.
+- Export the `AMSError` class and `AMSOperationError` type.
+
+### Fixed
+
+- `getViewStatus` and `getView` now check the HTTP status. A failed `getView` no longer returns the error body as the file content.
+- In framed mode, new parents opt in with `replyOnFailure: true`: failed `getViewStatus`/`getView` requests reject, and `skypeTokenAuth` failures settle without rejection. For older parents the iframe preserves view failure replies without a request id, avoiding a false success with undefined file data.
+- Framed HTTP status propagation requires both the updated parent and the updated CDN iframe. npm builds load `<baseUrl>/latest/iframe.html`, so parent and iframe versions can differ. Until the iframe is updated, create/upload failures lack `status` and view failures can still hang.
+- `instanceof AMSError` now works in the ES5 build, so the original status and request URL are no longer lost when an error is rethrown. The `RequestPath` telemetry field is now populated, with object ids and query strings redacted.
+
 ## [0.2.0] - 2026-08-12
 
 ### Changed

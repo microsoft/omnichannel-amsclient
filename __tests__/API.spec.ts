@@ -3,6 +3,7 @@
  */
 
 import API from "../src/API";
+import { AMSError } from "../src/AMSError";
 
 describe('API', () => {
 
@@ -267,6 +268,7 @@ describe('API', () => {
         };
 
         (global as any).fetch = jest.fn(() => Promise.resolve({
+            ok: true,
             json: () => Promise.resolve({
                 view_location: 'view_location'
             })
@@ -316,6 +318,7 @@ describe('API', () => {
         };
 
         (global as any).fetch = jest.fn(() => Promise.resolve({
+            ok: true,
             blob: () => Promise.resolve()
         }));
 
@@ -346,5 +349,35 @@ describe('API', () => {
         } catch (error) {
             expect(error).not.toBe(undefined);
         }
+    });
+    describe('HTTP status on failure', () => {
+        const token = { chatId: 'chatId', token: 'token' };
+        const fileMetadata = { fileSharingProtocolType: 0, id: 'id', name: 'name', size: 0, type: 'type', url: 'url' };
+        const file = new File([""], "filename", { type: 'text/html' });
+        const operations: [string, () => Promise<unknown>][] = [
+            ['skypeTokenAuth', () => API.skypeTokenAuth(token)],
+            ['createObject', () => API.createObject('id', file, token)],
+            ['uploadDocument', () => API.uploadDocument('id', file, token)],
+            ['getViewStatus', () => API.getViewStatus(fileMetadata, token)],
+            ['getView', () => API.getView(fileMetadata, 'viewLocation', token)]
+        ];
+
+        it.each(operations)('API.%s() should throw AMSError with status 401 and not read the body', async (_name, operation) => {
+            const json = jest.fn();
+            const blob = jest.fn();
+            (global as any).fetch = jest.fn(() => Promise.resolve({ ok: false, status: 401, statusText: 'Unauthorized', json, blob }));
+
+            await expect(operation()).rejects.toMatchObject({ name: 'AMSError', status: 401 });
+            expect(json).not.toHaveBeenCalled();
+            expect(blob).not.toHaveBeenCalled();
+        });
+
+        it.each(operations)('API.%s() should throw AMSError without status on network failure', async (_name, operation) => {
+            (global as any).fetch = jest.fn(() => Promise.reject(new TypeError('Failed to fetch')));
+
+            const error = await operation().catch((e: AMSError) => e) as AMSError;
+            expect(error).toBeInstanceOf(AMSError);
+            expect(error.status).toBeUndefined();
+        });
     });
 })

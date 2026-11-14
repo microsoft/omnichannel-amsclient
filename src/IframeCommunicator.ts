@@ -1,6 +1,8 @@
 import AMSLogData from "./AMSLogData";
 import API from "./API";
 import { AMSError } from "./AMSError";
+import { extractErrorDetails } from "./AMSOperationError";
+import sanitizeRequestPath from "./utils/sanitizeRequestPath";
 import fetchClientId from "./utils/fetchClientId";
 import fetchDebugConfig from "./utils/fetchDebugConfig";
 import fetchTelemetryConfig from "./utils/fetchTelemetryConfig";
@@ -110,12 +112,12 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.SkypeTokenAuth, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
-                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.SkypeTokenAuth, {}, PostMessageEventStatus.Failure);
+                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.SkypeTokenAuth, this.createFailureData(data, error), PostMessageEventStatus.Failure);
 
                     this.scenarioMarker.failScenario(PostMessageEventName.SkypeTokenAuth, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
+                        RequestPath: error instanceof AMSError ? sanitizeRequestPath(error.requestUrl) : '',
                         ExceptionDetails: error instanceof Error ? error.message : String(error)
                     });
                 }
@@ -147,19 +149,12 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
-                    const postMessageData = {
-                        requestId: data.requestId,
-                        eventType: PostMessageEventType.Response,
-                        eventName: data.eventName,
-                        eventStatus: PostMessageEventStatus.Failure
-                    };
-
-                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, postMessageData, PostMessageEventStatus.Failure);
+                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.CreateObject, this.createFailureData(data, error), PostMessageEventStatus.Failure);
 
                     this.scenarioMarker.failScenario(PostMessageEventName.CreateObject, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
+                        RequestPath: error instanceof AMSError ? sanitizeRequestPath(error.requestUrl) : '',
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
                         ExceptionDetails: error instanceof Error ? error.message : String(error)
@@ -195,18 +190,12 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
-                    const postMessageData = {
-                        requestId: data.requestId,
-                        eventType: PostMessageEventType.Response,
-                        eventName: data.eventName,
-                        eventStatus: PostMessageEventStatus.Failure
-                    };
-                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, postMessageData, PostMessageEventStatus.Failure);
+                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.UploadDocument, this.createFailureData(data, error), PostMessageEventStatus.Failure);
 
                     this.scenarioMarker.failScenario(PostMessageEventName.UploadDocument, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
+                        RequestPath: error instanceof AMSError ? sanitizeRequestPath(error.requestUrl) : '',
                         DocumentId: data.documentId,
                         MimeType: data.file.type,
                         FileExtension: extractFileExtension(data.file.name),
@@ -243,12 +232,12 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetViewStatus, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
-                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetViewStatus, {}, PostMessageEventStatus.Failure);
+                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetViewStatus, this.createFailureData(data, error), PostMessageEventStatus.Failure);
 
                     this.scenarioMarker.failScenario(PostMessageEventName.GetViewStatus, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
+                        RequestPath: error instanceof AMSError ? sanitizeRequestPath(error.requestUrl) : '',
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),
@@ -285,12 +274,12 @@ class IframeCommunicator {
 
                     this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetView, postMessageData, PostMessageEventStatus.Success);
                 } catch (error) {
-                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetView, {}, PostMessageEventStatus.Failure);
+                    this.postMessage(PostMessageEventType.Response, PostMessageEventName.GetView, this.createFailureData(data, error), PostMessageEventStatus.Failure);
 
                     this.scenarioMarker.failScenario(PostMessageEventName.GetView, {
                         AMSClientRuntimeId: data.runtimeId,
                         ChatId: data.chatToken.chatId,
-                        RequestPath: error instanceof AMSError ? error.requestUrl : '',
+                        RequestPath: error instanceof AMSError ? sanitizeRequestPath(error.requestUrl) : '',
                         DocumentId: data.fileMetadata?.id,
                         MimeType: data.fileMetadata?.type,
                         FileExtension: extractFileExtension(data.fileMetadata?.name),
@@ -299,6 +288,22 @@ class IframeCommunicator {
                 }
             }
         }
+    }
+
+    private createFailureData(data: any, error: unknown): PostMessageRequestData {  // eslint-disable-line @typescript-eslint/no-explicit-any
+        // Legacy parents resolve view replies without checking eventStatus; keep those failures uncorrelated.
+        if (data.replyOnFailure !== true
+            && (data.eventName === PostMessageEventName.GetViewStatus || data.eventName === PostMessageEventName.GetView)) {
+            return {};
+        }
+
+        return {
+            requestId: data.requestId,
+            eventType: PostMessageEventType.Response,
+            eventName: data.eventName,
+            eventStatus: PostMessageEventStatus.Failure,
+            error: extractErrorDetails(error)
+        };
     }
 
     private sendTelemetry(logLevel: LogLevel, logData: AMSLogData): void {

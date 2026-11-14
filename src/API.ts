@@ -105,7 +105,7 @@ const skypeTokenAuth = async (chatToken: OmnichannelChatToken): Promise<Response
     try {
         const response = await fetch(url, request);
         if (!response.ok) {
-            throw new AMSError(`AMSAuth: ${response.status} ${response.statusText}`, url);
+            throw new AMSError(`AMSAuth: ${response.status} ${response.statusText}`, url, undefined, response.status);
         }
         return response;
     } catch (error) {
@@ -147,7 +147,7 @@ const createObject = async (id: string, file: File, chatToken: OmnichannelChatTo
     try {
         const response = await fetch(url, request as any);  // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!response.ok) {
-            throw new AMSError(`AMSCreateObjectFailed: ${response.status} ${response.statusText}`, url);
+            throw new AMSError(`AMSCreateObjectFailed: ${response.status} ${response.statusText}`, url, undefined, response.status);
         }
         const jsonResponse = await response.json();
         return jsonResponse; // returns document id
@@ -180,7 +180,7 @@ const uploadDocument = async (documentId: string, file: File | AMSFileInfo, chat
     try {
         const response = await fetch(url, request as RequestInit);
         if (!response.ok) {
-            throw new AMSError(`AMSUploadDocumentFailed: ${response.status} ${response.statusText}`, url);
+            throw new AMSError(`AMSUploadDocumentFailed: ${response.status} ${response.statusText}`, url, undefined, response.status);
         }
         const fileMetadata = {
             name: file.name,
@@ -216,6 +216,9 @@ const getViewStatus = async (fileMetadata: FileMetadata, chatToken: OmnichannelC
 
     try {
         const response = await fetch(url, request);
+        if (!response.ok) {
+            throw new AMSError(`AMSGetViewStatusFailed: ${response.status} ${response.statusText}`, url, undefined, response.status);
+        }
         const jsonResponse = await response.json();
 
         const { content_state, view_state, view_location } = jsonResponse;
@@ -263,10 +266,16 @@ const getView = async (fileMetadata: FileMetadata, viewLocation: string, chatTok
 
     try {
         const response = await fetch(url, request);
+        if (!response.ok) {
+            throw new AMSError(`AMSGetViewFailed: ${response.status} ${response.statusText}`, url, undefined, response.status);
+        }
         const blobResponse = await response.blob();
         return blobResponse;
     } catch (error) {
         !GlobalConfiguration.silentError && console.log(error);
+        if (error instanceof AMSError) {
+            throw error;
+        }
         throw new AMSError(error.message || 'AMSGetViewFailed', url, error);
     }
 }

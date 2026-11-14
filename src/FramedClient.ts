@@ -1,8 +1,7 @@
 import { baseUrl, sdkVersion } from "./config";
-import AMSCreateObjectResponse from "./AMSCreateObjectResponse";
 import AMSFileInfo from "./AMSFileInfo";
 import AMSLogger from "./AMSLogger";
-import AMSViewStatusResponse from "./AMSViewStatusResponse";
+import { createOperationError } from "./AMSOperationError";
 import FileMetadata from "./FileMetadata";
 import FramedClientConfig from "./FramedClientConfig";
 import FramedClientEventName from "./FramedClientEventName";
@@ -264,6 +263,7 @@ class FramedClient {
             requestId,
             eventType,
             eventName,
+            replyOnFailure: true,
             ...data
         }, this.baseUrl);
     }
@@ -291,47 +291,37 @@ class FramedClient {
             const { data } = event;
 
             if (event.data.eventName === PostMessageEventName.SkypeTokenAuth) {
+                // Resolves even on failure: initialize() does not await it, so rejecting would be unhandled.
                 if (data.requestId in this.requestCallbacks) {
                     this.requestCallbacks[data.requestId].resolve();
                     delete this.requestCallbacks[data.requestId];
                 }
             } else if (event.data.eventName === PostMessageEventName.CreateObject) {
-                if (data.eventStatus === PostMessageEventStatus.Success) {
-                    if (data.requestId in this.requestCallbacks) {
-                        this.requestCallbacks[data.requestId].resolve(data.response as AMSCreateObjectResponse);
-                        delete this.requestCallbacks[data.requestId];
-                    }
-                } else {
-                    if (data.requestId in this.requestCallbacks) {
-                        this.requestCallbacks[data.requestId].reject();
-                        delete this.requestCallbacks[data.requestId];
-                    }
-                }
+                this.settleRequest(data, 'createObject');
             } else if (event.data.eventName === PostMessageEventName.UploadDocument) {
-                if (data.eventStatus === PostMessageEventStatus.Success) {
-                    if (data.requestId in this.requestCallbacks) {
-                        this.requestCallbacks[data.requestId].resolve(data.response as FileMetadata);
-                        delete this.requestCallbacks[data.requestId];
-                    }
-                } else {
-                    if (data.requestId in this.requestCallbacks) {
-                        this.requestCallbacks[data.requestId].reject();
-                        delete this.requestCallbacks[data.requestId];
-                    }
-                }
+                this.settleRequest(data, 'uploadDocument');
             } else if (event.data.eventName === PostMessageEventName.GetViewStatus) {
-                if (data.requestId in this.requestCallbacks) {
-                    this.requestCallbacks[data.requestId].resolve(data.response as AMSViewStatusResponse);
-                    delete this.requestCallbacks[data.requestId];
-                }
+                this.settleRequest(data, 'getViewStatus');
             } else if (event.data.eventName === PostMessageEventName.GetView) {
-                if (data.requestId in this.requestCallbacks) {
-                    this.requestCallbacks[data.requestId].resolve(data.response as Blob);
-                    delete this.requestCallbacks[data.requestId];
-                }
+                this.settleRequest(data, 'getView');
             } else if (event.data.eventName === PostMessageEventName.SendTelemetry) {
                 this.logger?.log(data.logLevel, data.logData.Event, data.logData);
             }
+        }
+    }
+
+    private settleRequest(data: any, operation: string): void {  // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (!(data.requestId in this.requestCallbacks)) {
+            return;
+        }
+
+        const callback = this.requestCallbacks[data.requestId];
+        delete this.requestCallbacks[data.requestId];
+
+        if (data.eventStatus === PostMessageEventStatus.Success) {
+            callback.resolve(data.response);
+        } else {
+            callback.reject(createOperationError(operation, data.error));
         }
     }
 

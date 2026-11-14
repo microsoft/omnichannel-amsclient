@@ -2,6 +2,9 @@ import createAMSClient from "./createAMSClient";
 import FramedlessClient from './FramedlessClient';
 import FramedClient from './FramedClient';
 
+export { AMSError } from './AMSError';
+export { AMSOperationError } from './AMSOperationError';
+
 declare global {
   interface Window {
     Microsoft: any; // eslint-disable-line @typescript-eslint/no-explicit-any
